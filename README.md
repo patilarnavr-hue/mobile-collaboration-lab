@@ -1,26 +1,30 @@
-# Welcome to your Lovable project
+# AgroEye - Smart Agricultural Monitoring
+
+A Progressive Web App designed to help farmers monitor and manage crucial environmental factors that affect crop growth and productivity.
+
+## Features
+
+- **Real-time Moisture Monitoring**: Track soil moisture levels with visual indicators
+- **Fertility Level Tracking**: Monitor soil fertility data with historical trends
+- **Time Slot Management**: Create and manage watering schedules
+- **Dashboard Overview**: Quick access to all key metrics
+- **Data Logging**: Automatic recording of readings over time
+- **Alert System**: Notifications for low moisture levels or scheduled watering times
+- **Offline Capability**: Basic functionality when internet connection is limited
+
+## Tech Stack
+
+- **Frontend**: React with TypeScript, Tailwind CSS, Vite
+- **Backend**: Lovable Cloud (Supabase) - Authentication, Database, Real-time
+- **PWA**: Service Workers for offline functionality
 
 ## Project info
 
 **URL**: https://lovable.dev/projects/0b28801d-fc56-4319-b363-135e72a077ee
 
-## How can I edit this code?
+## Getting Started
 
-There are several ways of editing your application.
-
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/0b28801d-fc56-4319-b363-135e72a077ee) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
+Follow these steps to run the project locally:
 
 ```sh
 # Step 1: Clone the repository using the project's Git URL.
@@ -36,21 +40,26 @@ npm i
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+## Installation as PWA
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+### Desktop
+1. Visit the app in Chrome/Edge
+2. Click the install icon in the address bar
+3. Click "Install" in the prompt
 
-**Use GitHub Codespaces**
+### Mobile
+1. Visit the app in your mobile browser
+2. Tap the share/menu button
+3. Select "Add to Home Screen"
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## Development Commands
 
-## What technologies are used for this project?
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run preview` - Preview production build
+- `npm run lint` - Run ESLint
+
+## Technologies
 
 This project is built with:
 
@@ -59,15 +68,32 @@ This project is built with:
 - React
 - shadcn-ui
 - Tailwind CSS
+- Lovable Cloud (Supabase)
 
-## How can I deploy this project?
+## Deployment
 
 Simply open [Lovable](https://lovable.dev/projects/0b28801d-fc56-4319-b363-135e72a077ee) and click on Share -> Publish.
 
-## Can I connect a custom domain to my Lovable project?
+The app can also be deployed to any static hosting service:
+- Vercel
+- Netlify
+- GitHub Pages
+- Cloudflare Pages
 
-Yes, you can!
+Ensure your Lovable Cloud backend is properly configured with the correct redirect URLs.
+
+## Custom Domain
 
 To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
 
 Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+
+## Security
+
+- Row Level Security (RLS) policies protect user data
+- Authentication required for all data operations
+- Secure environment variable handling
+
+## Support
+
+For issues and questions, visit [Lovable](https://lovable.dev/projects/0b28801d-fc56-4319-b363-135e72a077ee) and use the AI assistant.
