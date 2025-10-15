@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Droplet, Sprout, Clock, Activity } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import BottomNav from "@/components/BottomNav";
+import ChatBot from "@/components/ChatBot";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -149,6 +150,7 @@ const Index = () => {
       </main>
 
       <BottomNav />
+      <ChatBot />
     </div>
   );
 };
