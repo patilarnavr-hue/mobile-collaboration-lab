@@ -61,6 +61,7 @@ export type Database = {
           id: string
           moisture_level: number
           notes: string | null
+          sensor_id: string | null
           status: string | null
           user_id: string
         }
@@ -69,6 +70,7 @@ export type Database = {
           id?: string
           moisture_level: number
           notes?: string | null
+          sensor_id?: string | null
           status?: string | null
           user_id: string
         }
@@ -77,10 +79,18 @@ export type Database = {
           id?: string
           moisture_level?: number
           notes?: string | null
+          sensor_id?: string | null
           status?: string | null
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "moisture_readings_sensor_id_fkey"
+            columns: ["sensor_id"]
+            isOneToOne: false
+            referencedRelation: "sensors"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "moisture_readings_user_id_fkey"
             columns: ["user_id"]
@@ -114,6 +124,42 @@ export type Database = {
           full_name?: string | null
           id?: string
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      sensors: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          last_reading: number | null
+          last_reading_at: string | null
+          sensor_code: string
+          sensor_name: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_reading?: number | null
+          last_reading_at?: string | null
+          sensor_code: string
+          sensor_name: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_reading?: number | null
+          last_reading_at?: string | null
+          sensor_code?: string
+          sensor_name?: string
+          updated_at?: string | null
+          user_id?: string
         }
         Relationships: []
       }

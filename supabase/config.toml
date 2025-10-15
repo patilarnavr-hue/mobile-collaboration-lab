@@ -2,3 +2,6 @@ project_id = "hhujbxvyluxahsvferfp"
 
 [functions.chat-assistant]
 verify_jwt = false
+
+[functions.sensor-data]
+verify_jwt = false
