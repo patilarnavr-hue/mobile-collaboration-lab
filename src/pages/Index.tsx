@@ -6,6 +6,7 @@ import { Droplet, Sprout, Clock, Activity } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import BottomNav from "@/components/BottomNav";
 import ChatBot from "@/components/ChatBot";
+import AIRecommendations from "@/components/AIRecommendations";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -71,7 +72,10 @@ const Index = () => {
         <p className="text-sm opacity-90">Monitor your crops in real-time</p>
       </header>
 
-      <main className="p-4 space-y-4 max-w-lg mx-auto">
+      <main className="p-4 space-y-6 max-w-lg mx-auto">
+        {/* AI Recommendations */}
+        <AIRecommendations />
+
         <div className="grid grid-cols-1 gap-4">
           <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate("/moisture")}>
             <CardHeader className="flex flex-row items-center justify-between pb-2">

@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.sensor-data]
 verify_jwt = false
+
+[functions.ai-recommendations]
+verify_jwt = true
