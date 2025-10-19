@@ -117,7 +117,16 @@ const Schedule = () => {
     if (error) {
       toast.error("Failed to update schedule");
     } else {
-      toast.success(currentState ? "Schedule disabled" : "Schedule enabled");
+      const message = currentState ? "Schedule disabled" : "Schedule enabled";
+      toast.success(message);
+      
+      // Request notification permission if enabling schedule
+      if (!currentState && "Notification" in window && Notification.permission === "default") {
+        const permission = await Notification.requestPermission();
+        if (permission === "granted") {
+          toast.success("Notifications enabled for this schedule");
+        }
+      }
     }
   };
 
