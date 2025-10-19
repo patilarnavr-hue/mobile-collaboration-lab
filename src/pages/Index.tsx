@@ -7,56 +7,65 @@ import { useNavigate } from "react-router-dom";
 import BottomNav from "@/components/BottomNav";
 import ChatBot from "@/components/ChatBot";
 import AIRecommendations from "@/components/AIRecommendations";
+import WeatherWidget from "@/components/WeatherWidget";
+import AlertsPanel from "@/components/AlertsPanel";
+import CropSelector from "@/components/CropSelector";
+import HealthScore from "@/components/HealthScore";
 
 const Index = () => {
   const navigate = useNavigate();
   const [moistureLevel, setMoistureLevel] = useState<number | null>(null);
   const [fertilityLevel, setFertilityLevel] = useState<number | null>(null);
   const [nextSchedule, setNextSchedule] = useState<string | null>(null);
+  const [selectedCrop, setSelectedCrop] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchDashboardData = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      // Fetch latest moisture reading
-      const { data: moistureData } = await supabase
-        .from("moisture_readings")
-        .select("moisture_level")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .single();
-
-      if (moistureData) setMoistureLevel(moistureData.moisture_level);
-
-      // Fetch latest fertility reading
-      const { data: fertilityData } = await supabase
-        .from("fertility_readings")
-        .select("overall_fertility")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .single();
-
-      if (fertilityData) setFertilityLevel(fertilityData.overall_fertility);
-
-      // Fetch next schedule
-      const { data: scheduleData } = await supabase
-        .from("watering_schedules")
-        .select("time_of_day, title")
-        .eq("user_id", user.id)
-        .eq("is_enabled", true)
-        .limit(1)
-        .single();
-
-      if (scheduleData) {
-        setNextSchedule(`${scheduleData.title} at ${scheduleData.time_of_day}`);
-      }
-    };
-
     fetchDashboardData();
-  }, []);
+  }, [selectedCrop]);
+
+  const fetchDashboardData = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    // Fetch latest moisture reading
+    const moistureQuery = supabase
+      .from("moisture_readings")
+      .select("moisture_level")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .limit(1);
+    
+    if (selectedCrop) moistureQuery.eq("crop_id", selectedCrop);
+    
+    const { data: moistureData } = await moistureQuery.single();
+    if (moistureData) setMoistureLevel(moistureData.moisture_level);
+
+    // Fetch latest fertility reading
+    const fertilityQuery = supabase
+      .from("fertility_readings")
+      .select("overall_fertility")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .limit(1);
+    
+    if (selectedCrop) fertilityQuery.eq("crop_id", selectedCrop);
+    
+    const { data: fertilityData } = await fertilityQuery.single();
+    if (fertilityData) setFertilityLevel(fertilityData.overall_fertility);
+
+    // Fetch next schedule
+    const { data: scheduleData } = await supabase
+      .from("watering_schedules")
+      .select("time_of_day, title")
+      .eq("user_id", user.id)
+      .eq("is_enabled", true)
+      .limit(1)
+      .single();
+
+    if (scheduleData) {
+      setNextSchedule(`${scheduleData.title} at ${scheduleData.time_of_day}`);
+    }
+  };
 
   const getStatusColor = (level: number | null) => {
     if (level === null) return "text-muted-foreground";
@@ -73,8 +82,20 @@ const Index = () => {
       </header>
 
       <main className="p-4 space-y-6 max-w-lg mx-auto">
+        {/* Crop Selector */}
+        <CropSelector value={selectedCrop || undefined} onChange={setSelectedCrop} />
+
         {/* AI Recommendations */}
         <AIRecommendations />
+
+        {/* Alerts Panel */}
+        <AlertsPanel />
+
+        {/* Weather Widget */}
+        <WeatherWidget />
+
+        {/* Health Score */}
+        <HealthScore cropId={selectedCrop} />
 
         <div className="grid grid-cols-1 gap-4">
           <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate("/moisture")}>

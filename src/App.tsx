@@ -8,6 +8,7 @@ import Moisture from "./pages/Moisture";
 import Fertility from "./pages/Fertility";
 import Schedule from "./pages/Schedule";
 import Profile from "./pages/Profile";
+import Crops from "./pages/Crops";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -59,6 +60,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Profile />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/crops"
+              element={
+                <ProtectedRoute>
+                  <Crops />
                 </ProtectedRoute>
               }
             />

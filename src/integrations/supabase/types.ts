@@ -14,9 +14,96 @@ export type Database = {
   }
   public: {
     Tables: {
+      alerts: {
+        Row: {
+          alert_type: string
+          created_at: string
+          crop_id: string | null
+          id: string
+          is_read: boolean | null
+          message: string
+          severity: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          alert_type: string
+          created_at?: string
+          crop_id?: string | null
+          id?: string
+          is_read?: boolean | null
+          message: string
+          severity: string
+          title: string
+          user_id: string
+        }
+        Update: {
+          alert_type?: string
+          created_at?: string
+          crop_id?: string | null
+          id?: string
+          is_read?: boolean | null
+          message?: string
+          severity?: string
+          title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "alerts_crop_id_fkey"
+            columns: ["crop_id"]
+            isOneToOne: false
+            referencedRelation: "crops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crops: {
+        Row: {
+          created_at: string
+          crop_type: string
+          expected_harvest_date: string | null
+          id: string
+          is_active: boolean | null
+          location: string | null
+          name: string
+          notes: string | null
+          planting_date: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          crop_type: string
+          expected_harvest_date?: string | null
+          id?: string
+          is_active?: boolean | null
+          location?: string | null
+          name: string
+          notes?: string | null
+          planting_date?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          crop_type?: string
+          expected_harvest_date?: string | null
+          id?: string
+          is_active?: boolean | null
+          location?: string | null
+          name?: string
+          notes?: string | null
+          planting_date?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       fertility_readings: {
         Row: {
           created_at: string | null
+          crop_id: string | null
           id: string
           nitrogen_level: number | null
           notes: string | null
@@ -27,6 +114,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string | null
+          crop_id?: string | null
           id?: string
           nitrogen_level?: number | null
           notes?: string | null
@@ -37,6 +125,7 @@ export type Database = {
         }
         Update: {
           created_at?: string | null
+          crop_id?: string | null
           id?: string
           nitrogen_level?: number | null
           notes?: string | null
@@ -47,6 +136,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "fertility_readings_crop_id_fkey"
+            columns: ["crop_id"]
+            isOneToOne: false
+            referencedRelation: "crops"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "fertility_readings_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
@@ -55,9 +151,54 @@ export type Database = {
           },
         ]
       }
+      health_scores: {
+        Row: {
+          created_at: string
+          crop_id: string | null
+          fertility_score: number
+          id: string
+          moisture_score: number
+          notes: string | null
+          overall_score: number
+          user_id: string
+          weather_score: number | null
+        }
+        Insert: {
+          created_at?: string
+          crop_id?: string | null
+          fertility_score: number
+          id?: string
+          moisture_score: number
+          notes?: string | null
+          overall_score: number
+          user_id: string
+          weather_score?: number | null
+        }
+        Update: {
+          created_at?: string
+          crop_id?: string | null
+          fertility_score?: number
+          id?: string
+          moisture_score?: number
+          notes?: string | null
+          overall_score?: number
+          user_id?: string
+          weather_score?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "health_scores_crop_id_fkey"
+            columns: ["crop_id"]
+            isOneToOne: false
+            referencedRelation: "crops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       moisture_readings: {
         Row: {
           created_at: string | null
+          crop_id: string | null
           id: string
           moisture_level: number
           notes: string | null
@@ -67,6 +208,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string | null
+          crop_id?: string | null
           id?: string
           moisture_level: number
           notes?: string | null
@@ -76,6 +218,7 @@ export type Database = {
         }
         Update: {
           created_at?: string | null
+          crop_id?: string | null
           id?: string
           moisture_level?: number
           notes?: string | null
@@ -84,6 +227,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "moisture_readings_crop_id_fkey"
+            columns: ["crop_id"]
+            isOneToOne: false
+            referencedRelation: "crops"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "moisture_readings_sensor_id_fkey"
             columns: ["sensor_id"]
@@ -203,6 +353,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      weather_data: {
+        Row: {
+          created_at: string
+          forecast_data: Json | null
+          humidity: number | null
+          id: string
+          location: string
+          precipitation: number | null
+          temperature: number | null
+          user_id: string
+          weather_condition: string | null
+          wind_speed: number | null
+        }
+        Insert: {
+          created_at?: string
+          forecast_data?: Json | null
+          humidity?: number | null
+          id?: string
+          location: string
+          precipitation?: number | null
+          temperature?: number | null
+          user_id: string
+          weather_condition?: string | null
+          wind_speed?: number | null
+        }
+        Update: {
+          created_at?: string
+          forecast_data?: Json | null
+          humidity?: number | null
+          id?: string
+          location?: string
+          precipitation?: number | null
+          temperature?: number | null
+          user_id?: string
+          weather_condition?: string | null
+          wind_speed?: number | null
+        }
+        Relationships: []
       }
     }
     Views: {

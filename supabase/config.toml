@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.ai-recommendations]
 verify_jwt = true
+
+[functions.weather-data]
+verify_jwt = true
