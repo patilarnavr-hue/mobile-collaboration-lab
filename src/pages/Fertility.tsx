@@ -10,6 +10,8 @@ import { Sprout, Plus } from "lucide-react";
 import { toast } from "sonner";
 import BottomNav from "@/components/BottomNav";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import FertilityChart from "@/components/FertilityChart";
+import EmptyState from "@/components/EmptyState";
 
 interface FertilityReading {
   id: string;
@@ -238,15 +240,21 @@ const Fertility = () => {
           </DialogContent>
         </Dialog>
 
+        {readings.length > 0 && <FertilityChart readings={readings} />}
+
         <Card>
           <CardHeader>
             <CardTitle>Recent Readings</CardTitle>
           </CardHeader>
           <CardContent>
             {readings.length === 0 ? (
-              <p className="text-center text-muted-foreground py-8">
-                No readings yet. Log your first data above!
-              </p>
+              <EmptyState
+                icon={Sprout}
+                title="No Fertility Data"
+                description="Start tracking soil fertility by logging NPK levels. Get insights on your soil health."
+                actionLabel="Log First Data"
+                onAction={() => setDialogOpen(true)}
+              />
             ) : (
               <div className="space-y-3">
                 {readings.map((reading) => (

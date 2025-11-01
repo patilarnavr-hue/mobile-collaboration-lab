@@ -11,6 +11,8 @@ import { toast } from "sonner";
 import BottomNav from "@/components/BottomNav";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import MoistureChart from "@/components/MoistureChart";
+import EmptyState from "@/components/EmptyState";
 
 interface MoistureReading {
   id: string;
@@ -384,15 +386,21 @@ const Moisture = () => {
           </DialogContent>
         </Dialog>
 
+        {readings.length > 0 && <MoistureChart readings={readings} />}
+
         <Card>
           <CardHeader>
             <CardTitle>Recent Readings</CardTitle>
           </CardHeader>
           <CardContent>
             {readings.length === 0 ? (
-              <p className="text-center text-muted-foreground py-8">
-                No readings yet. Add your first reading above!
-              </p>
+              <EmptyState
+                icon={Droplet}
+                title="No Moisture Readings"
+                description="Start tracking soil moisture levels by adding your first reading or connecting a sensor."
+                actionLabel="Add First Reading"
+                onAction={() => setDialogOpen(true)}
+              />
             ) : (
               <div className="space-y-3">
                 {readings.map((reading) => (

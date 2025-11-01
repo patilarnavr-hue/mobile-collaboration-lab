@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import BottomNav from "@/components/BottomNav";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
+import EmptyState from "@/components/EmptyState";
 
 interface Schedule {
   id: string;
@@ -212,13 +213,13 @@ const Schedule = () => {
         </Dialog>
 
         {schedules.length === 0 ? (
-          <Card>
-            <CardContent className="py-8">
-              <p className="text-center text-muted-foreground">
-                No schedules yet. Create your first watering schedule!
-              </p>
-            </CardContent>
-          </Card>
+          <EmptyState
+            icon={Calendar}
+            title="No Watering Schedules"
+            description="Create your first watering schedule to never miss a watering session. Get timely notifications."
+            actionLabel="Create Schedule"
+            onAction={() => setDialogOpen(true)}
+          />
         ) : (
           <div className="space-y-3">
             {schedules.map((schedule) => (

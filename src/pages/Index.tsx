@@ -11,6 +11,8 @@ import WeatherWidget from "@/components/WeatherWidget";
 import AlertsPanel from "@/components/AlertsPanel";
 import CropSelector from "@/components/CropSelector";
 import HealthScore from "@/components/HealthScore";
+import HealthScoreChart from "@/components/HealthScoreChart";
+import Onboarding from "@/components/Onboarding";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -18,10 +20,27 @@ const Index = () => {
   const [fertilityLevel, setFertilityLevel] = useState<number | null>(null);
   const [nextSchedule, setNextSchedule] = useState<string | null>(null);
   const [selectedCrop, setSelectedCrop] = useState<string | null>(null);
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   useEffect(() => {
+    checkOnboarding();
     fetchDashboardData();
   }, [selectedCrop]);
+
+  const checkOnboarding = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data } = await supabase
+      .from("user_preferences")
+      .select("onboarding_completed")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (!data) {
+      setShowOnboarding(true);
+    }
+  };
 
   const fetchDashboardData = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -96,6 +115,8 @@ const Index = () => {
 
         {/* Health Score */}
         <HealthScore cropId={selectedCrop} />
+        
+        <HealthScoreChart cropId={selectedCrop} />
 
         <div className="grid grid-cols-1 gap-4">
           <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate("/moisture")}>
@@ -176,6 +197,11 @@ const Index = () => {
 
       <BottomNav />
       <ChatBot />
+      
+      <Onboarding
+        open={showOnboarding}
+        onComplete={() => setShowOnboarding(false)}
+      />
     </div>
   );
 };
