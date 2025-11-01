@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,21 +6,34 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { User, LogOut, Mail, Download, Bell, Trash2, Globe } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { User, LogOut, Mail, Download, Bell, Trash2, Globe, Camera, MapPin, CalendarDays, Activity } from "lucide-react";
 import { toast } from "sonner";
 import BottomNav from "@/components/BottomNav";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
 const Profile = () => {
   const navigate = useNavigate();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [email, setEmail] = useState("");
   const [fullName, setFullName] = useState("");
+  const [bio, setBio] = useState("");
+  const [location, setLocation] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState("");
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [userId, setUserId] = useState("");
+  const [userStats, setUserStats] = useState({
+    daysActive: 0,
+    totalReadings: 0,
+    totalCrops: 0,
+  });
 
   useEffect(() => {
     fetchProfile();
+    fetchUserStats();
     checkNotificationPermission();
   }, []);
 
@@ -33,13 +46,40 @@ const Profile = () => {
 
     const { data: profile } = await supabase
       .from("profiles")
-      .select("full_name")
+      .select("full_name, bio, location, avatar_url, created_at")
       .eq("id", user.id)
       .maybeSingle();
 
     if (profile) {
       setFullName(profile.full_name || "");
+      setBio(profile.bio || "");
+      setLocation(profile.location || "");
+      setAvatarUrl(profile.avatar_url || "");
     }
+  };
+
+  const fetchUserStats = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const [moistureData, fertilityData, cropsData, profileData] = await Promise.all([
+      supabase.from("moisture_readings").select("id", { count: "exact" }).eq("user_id", user.id),
+      supabase.from("fertility_readings").select("id", { count: "exact" }).eq("user_id", user.id),
+      supabase.from("crops").select("id", { count: "exact" }).eq("user_id", user.id),
+      supabase.from("profiles").select("created_at").eq("id", user.id).single(),
+    ]);
+
+    const totalReadings = (moistureData.count || 0) + (fertilityData.count || 0);
+    const totalCrops = cropsData.count || 0;
+
+    let daysActive = 0;
+    if (profileData.data?.created_at) {
+      const createdAt = new Date(profileData.data.created_at);
+      const now = new Date();
+      daysActive = Math.floor((now.getTime() - createdAt.getTime()) / (1000 * 60 * 60 * 24));
+    }
+
+    setUserStats({ daysActive, totalReadings, totalCrops });
   };
 
   const checkNotificationPermission = () => {
@@ -118,6 +158,46 @@ const Profile = () => {
     setLoading(false);
   };
 
+  const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      setUploading(true);
+      const file = event.target.files?.[0];
+      if (!file) return;
+
+      if (!file.type.startsWith("image/")) {
+        toast.error("Please upload an image file");
+        return;
+      }
+
+      const fileExt = file.name.split(".").pop();
+      const fileName = `${userId}/${Math.random()}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("avatars")
+        .upload(fileName, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from("avatars")
+        .getPublicUrl(fileName);
+
+      const { error: updateError } = await supabase
+        .from("profiles")
+        .update({ avatar_url: publicUrl })
+        .eq("id", userId);
+
+      if (updateError) throw updateError;
+
+      setAvatarUrl(publicUrl);
+      toast.success("Avatar updated successfully");
+    } catch (error) {
+      toast.error("Failed to upload avatar");
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -127,7 +207,11 @@ const Profile = () => {
 
     const { error } = await supabase
       .from("profiles")
-      .update({ full_name: fullName })
+      .update({ 
+        full_name: fullName,
+        bio: bio,
+        location: location,
+      })
       .eq("id", user.id);
 
     if (error) {
@@ -163,6 +247,59 @@ const Profile = () => {
       <main className="p-4 space-y-4 max-w-lg mx-auto">
         <Card>
           <CardHeader>
+            <CardTitle>User Statistics</CardTitle>
+          </CardHeader>
+          <CardContent className="grid grid-cols-3 gap-4">
+            <div className="text-center">
+              <CalendarDays className="w-6 h-6 mx-auto mb-1 text-primary" />
+              <p className="text-2xl font-bold">{userStats.daysActive}</p>
+              <p className="text-xs text-muted-foreground">Days Active</p>
+            </div>
+            <div className="text-center">
+              <Activity className="w-6 h-6 mx-auto mb-1 text-primary" />
+              <p className="text-2xl font-bold">{userStats.totalReadings}</p>
+              <p className="text-xs text-muted-foreground">Total Readings</p>
+            </div>
+            <div className="text-center">
+              <Globe className="w-6 h-6 mx-auto mb-1 text-primary" />
+              <p className="text-2xl font-bold">{userStats.totalCrops}</p>
+              <p className="text-xs text-muted-foreground">Crops</p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Profile Picture</CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col items-center gap-4">
+            <Avatar className="w-24 h-24">
+              <AvatarImage src={avatarUrl} alt={fullName} />
+              <AvatarFallback className="text-2xl">
+                {fullName.split(" ").map(n => n[0]).join("").toUpperCase() || "U"}
+              </AvatarFallback>
+            </Avatar>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleAvatarUpload}
+              className="hidden"
+            />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+            >
+              <Camera className="w-4 h-4 mr-2" />
+              {uploading ? "Uploading..." : "Change Avatar"}
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
             <CardTitle>Account Information</CardTitle>
           </CardHeader>
           <CardContent>
@@ -189,6 +326,30 @@ const Profile = () => {
                     className="flex-1"
                   />
                 </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="location">Location</Label>
+                <div className="flex items-center gap-2">
+                  <MapPin className="w-4 h-4 text-muted-foreground" />
+                  <Input
+                    id="location"
+                    type="text"
+                    value={location}
+                    onChange={(e) => setLocation(e.target.value)}
+                    placeholder="Your location"
+                    className="flex-1"
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="bio">Bio</Label>
+                <Textarea
+                  id="bio"
+                  value={bio}
+                  onChange={(e) => setBio(e.target.value)}
+                  placeholder="Tell us about yourself..."
+                  rows={3}
+                />
               </div>
               <Button type="submit" className="w-full" disabled={loading}>
                 {loading ? "Updating..." : "Update Profile"}
