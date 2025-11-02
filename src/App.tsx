@@ -10,9 +10,12 @@ import Fertility from "./pages/Fertility";
 import Schedule from "./pages/Schedule";
 import Profile from "./pages/Profile";
 import Crops from "./pages/Crops";
+import CropComparison from "./pages/CropComparison";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ErrorBoundary from "./components/ErrorBoundary";
+import OfflineIndicator from "./components/OfflineIndicator";
+import InstallPrompt from "./components/InstallPrompt";
 
 const queryClient = new QueryClient();
 
@@ -22,6 +25,8 @@ const App = () => (
       <QueryClientProvider client={queryClient}>
         <Toaster />
         <Sonner />
+        <OfflineIndicator />
+        <InstallPrompt />
         <BrowserRouter>
           <Routes>
             <Route path="/auth" element={<Auth />} />
@@ -70,6 +75,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Crops />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/crop-comparison"
+              element={
+                <ProtectedRoute>
+                  <CropComparison />
                 </ProtectedRoute>
               }
             />

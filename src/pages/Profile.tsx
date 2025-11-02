@@ -26,6 +26,12 @@ const Profile = () => {
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  const [notificationSettings, setNotificationSettings] = useState({
+    enabled: true,
+    moisture: true,
+    schedule: true,
+    alerts: true
+  });
   const [userId, setUserId] = useState("");
   const [userStats, setUserStats] = useState({
     daysActive: 0,
@@ -57,6 +63,21 @@ const Profile = () => {
       setBio(profile.bio || "");
       setLocation(profile.location || "");
       setAvatarUrl(profile.avatar_url || "");
+    }
+
+    const { data: prefs } = await supabase
+      .from('user_preferences')
+      .select('*')
+      .eq('user_id', user.id)
+      .single();
+
+    if (prefs) {
+      setNotificationSettings({
+        enabled: prefs.notifications_enabled ?? true,
+        moisture: prefs.notification_moisture ?? true,
+        schedule: prefs.notification_schedule ?? true,
+        alerts: prefs.notification_alerts ?? true
+      });
     }
   };
 
@@ -215,6 +236,16 @@ const Profile = () => {
         location: location,
       })
       .eq("id", user.id);
+
+    await supabase
+      .from('user_preferences')
+      .upsert({
+        user_id: user.id,
+        notifications_enabled: notificationSettings.enabled,
+        notification_moisture: notificationSettings.moisture,
+        notification_schedule: notificationSettings.schedule,
+        notification_alerts: notificationSettings.alerts
+      }, { onConflict: 'user_id' });
 
     if (error) {
       toast.error("Failed to update profile");
@@ -400,6 +431,56 @@ const Profile = () => {
                   }
                 }}
               />
+            </div>
+
+            <div className="pt-4 border-t">
+              <h3 className="font-semibold mb-3 text-sm">Notification Preferences</h3>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="notif-enabled" className="text-sm">Enable Notifications</Label>
+                  <Switch
+                    id="notif-enabled"
+                    checked={notificationSettings.enabled}
+                    onCheckedChange={(checked) => 
+                      setNotificationSettings({ ...notificationSettings, enabled: checked })
+                    }
+                  />
+                </div>
+                {notificationSettings.enabled && (
+                  <>
+                    <div className="flex items-center justify-between pl-4">
+                      <Label htmlFor="notif-moisture" className="text-sm">Moisture Alerts</Label>
+                      <Switch
+                        id="notif-moisture"
+                        checked={notificationSettings.moisture}
+                        onCheckedChange={(checked) => 
+                          setNotificationSettings({ ...notificationSettings, moisture: checked })
+                        }
+                      />
+                    </div>
+                    <div className="flex items-center justify-between pl-4">
+                      <Label htmlFor="notif-schedule" className="text-sm">Schedule Reminders</Label>
+                      <Switch
+                        id="notif-schedule"
+                        checked={notificationSettings.schedule}
+                        onCheckedChange={(checked) => 
+                          setNotificationSettings({ ...notificationSettings, schedule: checked })
+                        }
+                      />
+                    </div>
+                    <div className="flex items-center justify-between pl-4">
+                      <Label htmlFor="notif-alerts" className="text-sm">Alert Notifications</Label>
+                      <Switch
+                        id="notif-alerts"
+                        checked={notificationSettings.alerts}
+                        onCheckedChange={(checked) => 
+                          setNotificationSettings({ ...notificationSettings, alerts: checked })
+                        }
+                      />
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
           </CardContent>
         </Card>

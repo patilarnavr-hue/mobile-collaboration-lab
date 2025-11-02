@@ -1,13 +1,19 @@
-// AgroEye Service Worker for offline functionality
-const CACHE_NAME = 'agroeye-v1';
-const RUNTIME_CACHE = 'agroeye-runtime';
+// AgroEye Service Worker for offline functionality with background sync
+const CACHE_NAME = 'agroeye-v2';
+const RUNTIME_CACHE = 'agroeye-runtime-v2';
+const SYNC_QUEUE = 'agroeye-sync-queue';
 
 // Assets to cache on install
 const PRECACHE_URLS = [
   '/',
   '/index.html',
-  '/manifest.json'
+  '/manifest.json',
+  '/icon-192.png',
+  '/icon-512.png'
 ];
+
+// Queue for offline requests
+let syncQueue = [];
 
 // Install event - cache essential resources
 self.addEventListener('install', (event) => {
@@ -32,6 +38,39 @@ self.addEventListener('activate', (event) => {
   );
 });
 
+// Background sync event
+self.addEventListener('sync', (event) => {
+  if (event.tag === 'sync-data') {
+    event.waitUntil(syncQueuedRequests());
+  }
+});
+
+// Push notification event
+self.addEventListener('push', (event) => {
+  if (!event.data) return;
+
+  const data = event.data.json();
+  const options = {
+    body: data.body || 'You have a new notification',
+    icon: '/icon-192.png',
+    badge: '/icon-192.png',
+    vibrate: [200, 100, 200],
+    data: data.data || {},
+  };
+
+  event.waitUntil(
+    self.registration.showNotification(data.title || 'AgroEye', options)
+  );
+});
+
+// Notification click event
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  event.waitUntil(
+    clients.openWindow(event.notification.data.url || '/')
+  );
+});
+
 // Fetch event - serve from cache, fallback to network
 self.addEventListener('fetch', (event) => {
   // Skip cross-origin requests
@@ -39,8 +78,37 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Handle POST/PUT/DELETE requests for background sync
+  if (['POST', 'PUT', 'DELETE'].includes(event.request.method)) {
+    event.respondWith(
+      fetch(event.request.clone())
+        .catch(async () => {
+          // Queue request for later sync
+          const requestData = {
+            url: event.request.url,
+            method: event.request.method,
+            headers: Object.fromEntries(event.request.headers.entries()),
+            body: await event.request.clone().text(),
+          };
+          
+          syncQueue.push(requestData);
+          
+          // Register sync
+          if ('sync' in self.registration) {
+            await self.registration.sync.register('sync-data');
+          }
+          
+          return new Response(
+            JSON.stringify({ queued: true, message: 'Request will sync when online' }),
+            { status: 202, headers: { 'Content-Type': 'application/json' } }
+          );
+        })
+    );
+    return;
+  }
+
   // Network-first strategy for API calls
-  if (event.request.url.includes('/functions/')) {
+  if (event.request.url.includes('/functions/') || event.request.url.includes('/rest/v1/')) {
     event.respondWith(
       fetch(event.request)
         .then((response) => {
@@ -55,7 +123,15 @@ self.addEventListener('fetch', (event) => {
         })
         .catch(() => {
           // Fallback to cache on network failure
-          return caches.match(event.request);
+          return caches.match(event.request).then(cachedResponse => {
+            if (cachedResponse) {
+              return cachedResponse;
+            }
+            return new Response(
+              JSON.stringify({ offline: true, error: 'No cached data available' }),
+              { status: 503, headers: { 'Content-Type': 'application/json' } }
+            );
+          });
         })
     );
     return;
@@ -66,11 +142,18 @@ self.addEventListener('fetch', (event) => {
     caches.match(event.request)
       .then((cachedResponse) => {
         if (cachedResponse) {
+          // Update cache in background
+          fetch(event.request).then((response) => {
+            if (response && response.status === 200) {
+              caches.open(RUNTIME_CACHE).then((cache) => {
+                cache.put(event.request, response);
+              });
+            }
+          });
           return cachedResponse;
         }
 
         return fetch(event.request).then((response) => {
-          // Don't cache non-successful responses
           if (!response || response.status !== 200 || response.type === 'error') {
             return response;
           }
@@ -85,3 +168,22 @@ self.addEventListener('fetch', (event) => {
       })
   );
 });
+
+// Sync queued requests
+async function syncQueuedRequests() {
+  const queue = [...syncQueue];
+  syncQueue = [];
+
+  for (const request of queue) {
+    try {
+      await fetch(request.url, {
+        method: request.method,
+        headers: request.headers,
+        body: request.body,
+      });
+    } catch (error) {
+      // Re-queue failed requests
+      syncQueue.push(request);
+    }
+  }
+}

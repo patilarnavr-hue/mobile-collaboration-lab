@@ -64,6 +64,7 @@ export type Database = {
           crop_type: string
           expected_harvest_date: string | null
           id: string
+          image_url: string | null
           is_active: boolean | null
           location: string | null
           name: string
@@ -77,6 +78,7 @@ export type Database = {
           crop_type: string
           expected_harvest_date?: string | null
           id?: string
+          image_url?: string | null
           is_active?: boolean | null
           location?: string | null
           name: string
@@ -90,6 +92,7 @@ export type Database = {
           crop_type?: string
           expected_harvest_date?: string | null
           id?: string
+          image_url?: string | null
           is_active?: boolean | null
           location?: string | null
           name?: string
@@ -323,6 +326,10 @@ export type Database = {
         Row: {
           created_at: string | null
           id: string
+          notification_alerts: boolean | null
+          notification_moisture: boolean | null
+          notification_schedule: boolean | null
+          notifications_enabled: boolean | null
           onboarding_completed: boolean | null
           theme: string | null
           updated_at: string | null
@@ -331,6 +338,10 @@ export type Database = {
         Insert: {
           created_at?: string | null
           id?: string
+          notification_alerts?: boolean | null
+          notification_moisture?: boolean | null
+          notification_schedule?: boolean | null
+          notifications_enabled?: boolean | null
           onboarding_completed?: boolean | null
           theme?: string | null
           updated_at?: string | null
@@ -339,6 +350,10 @@ export type Database = {
         Update: {
           created_at?: string | null
           id?: string
+          notification_alerts?: boolean | null
+          notification_moisture?: boolean | null
+          notification_schedule?: boolean | null
+          notifications_enabled?: boolean | null
           onboarding_completed?: boolean | null
           theme?: string | null
           updated_at?: string | null
