@@ -1,15 +1,18 @@
 import { Home, Droplet, Sprout, Calendar, User, Wheat } from "lucide-react";
 import { NavLink } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 
 const BottomNav = () => {
+  const { t } = useTranslation();
+  
   const navItems = [
-    { icon: Home, label: "Home", path: "/" },
-    { icon: Droplet, label: "Moisture", path: "/moisture" },
-    { icon: Sprout, label: "Fertility", path: "/fertility" },
-    { icon: Wheat, label: "Crops", path: "/crops" },
-    { icon: Calendar, label: "Schedule", path: "/schedule" },
-    { icon: User, label: "Profile", path: "/profile" },
+    { icon: Home, label: t("nav.home"), path: "/" },
+    { icon: Droplet, label: t("nav.moisture"), path: "/moisture" },
+    { icon: Sprout, label: t("nav.fertility"), path: "/fertility" },
+    { icon: Wheat, label: t("nav.crops"), path: "/crops" },
+    { icon: Calendar, label: t("nav.schedule"), path: "/schedule" },
+    { icon: User, label: t("nav.profile"), path: "/profile" },
   ];
 
   return (

@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,7 +9,8 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { User, LogOut, Mail, Download, Bell, Trash2, Globe, Camera, MapPin, CalendarDays, Activity, Moon, Sun } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { User, LogOut, Mail, Download, Bell, Trash2, Globe, Camera, MapPin, CalendarDays, Activity, Moon, Sun, Languages } from "lucide-react";
 import { toast } from "sonner";
 import { useTheme } from "next-themes";
 import BottomNav from "@/components/BottomNav";
@@ -18,6 +20,7 @@ const Profile = () => {
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { theme, setTheme } = useTheme();
+  const { t, i18n } = useTranslation();
   const [email, setEmail] = useState("");
   const [fullName, setFullName] = useState("");
   const [bio, setBio] = useState("");
@@ -271,8 +274,8 @@ const Profile = () => {
         <div className="flex items-center gap-3">
           <User className="w-8 h-8" />
           <div>
-            <h1 className="text-2xl font-bold">Profile & Settings</h1>
-            <p className="text-sm opacity-90">Manage your account</p>
+            <h1 className="text-2xl font-bold">{t("profile.title")}</h1>
+            <p className="text-sm opacity-90">{t("profile.account")}</p>
           </div>
         </div>
       </header>
@@ -404,7 +407,7 @@ const Profile = () => {
                   <Sun className="w-4 h-4 text-muted-foreground" />
                 )}
                 <Label htmlFor="theme" className="text-sm font-medium">
-                  Dark Mode
+                  {t("profile.theme")}
                 </Label>
               </div>
               <Switch
@@ -413,11 +416,31 @@ const Profile = () => {
                 onCheckedChange={(checked) => setTheme(checked ? "dark" : "light")}
               />
             </div>
+            
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Languages className="w-4 h-4 text-muted-foreground" />
+                <Label htmlFor="language" className="text-sm font-medium">
+                  {t("profile.language")}
+                </Label>
+              </div>
+              <Select value={i18n.language} onValueChange={(value) => i18n.changeLanguage(value)}>
+                <SelectTrigger id="language" className="w-32">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="en">English</SelectItem>
+                  <SelectItem value="es">Español</SelectItem>
+                  <SelectItem value="fr">Français</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Bell className="w-4 h-4 text-muted-foreground" />
                 <Label htmlFor="notifications" className="text-sm font-medium">
-                  Push Notifications
+                  {t("profile.notifications")}
                 </Label>
               </div>
               <Switch
@@ -434,10 +457,10 @@ const Profile = () => {
             </div>
 
             <div className="pt-4 border-t">
-              <h3 className="font-semibold mb-3 text-sm">Notification Preferences</h3>
+              <h3 className="font-semibold mb-3 text-sm">{t("profile.notifications")}</h3>
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="notif-enabled" className="text-sm">Enable Notifications</Label>
+                  <Label htmlFor="notif-enabled" className="text-sm">{t("profile.notificationsEnabled")}</Label>
                   <Switch
                     id="notif-enabled"
                     checked={notificationSettings.enabled}
@@ -449,7 +472,7 @@ const Profile = () => {
                 {notificationSettings.enabled && (
                   <>
                     <div className="flex items-center justify-between pl-4">
-                      <Label htmlFor="notif-moisture" className="text-sm">Moisture Alerts</Label>
+                      <Label htmlFor="notif-moisture" className="text-sm">{t("profile.moistureAlerts")}</Label>
                       <Switch
                         id="notif-moisture"
                         checked={notificationSettings.moisture}
@@ -459,7 +482,7 @@ const Profile = () => {
                       />
                     </div>
                     <div className="flex items-center justify-between pl-4">
-                      <Label htmlFor="notif-schedule" className="text-sm">Schedule Reminders</Label>
+                      <Label htmlFor="notif-schedule" className="text-sm">{t("profile.scheduleReminders")}</Label>
                       <Switch
                         id="notif-schedule"
                         checked={notificationSettings.schedule}
@@ -469,7 +492,7 @@ const Profile = () => {
                       />
                     </div>
                     <div className="flex items-center justify-between pl-4">
-                      <Label htmlFor="notif-alerts" className="text-sm">Alert Notifications</Label>
+                      <Label htmlFor="notif-alerts" className="text-sm">{t("profile.generalAlerts")}</Label>
                       <Switch
                         id="notif-alerts"
                         checked={notificationSettings.alerts}

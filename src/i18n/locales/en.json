@@ -1,0 +1,117 @@
+{
+  "app": {
+    "name": "AgroEye",
+    "tagline": "Smart Agricultural Monitoring"
+  },
+  "nav": {
+    "home": "Home",
+    "moisture": "Moisture",
+    "fertility": "Fertility",
+    "schedule": "Schedule",
+    "crops": "Crops",
+    "profile": "Profile"
+  },
+  "home": {
+    "welcome": "Welcome to AgroEye",
+    "healthScore": "Overall Health Score",
+    "quickActions": "Quick Actions",
+    "addReading": "Add Reading",
+    "manageSchedule": "Manage Schedule",
+    "recentActivity": "Recent Activity",
+    "alerts": "Alerts",
+    "noAlerts": "No active alerts",
+    "tips": "Growing Tips"
+  },
+  "moisture": {
+    "title": "Soil Moisture",
+    "currentLevel": "Current Moisture Level",
+    "status": "Status",
+    "optimal": "Optimal",
+    "low": "Low",
+    "high": "High",
+    "addReading": "Record New Reading",
+    "history": "Moisture History",
+    "lastReading": "Last Reading",
+    "noData": "No moisture data yet",
+    "startTracking": "Start tracking your soil moisture levels"
+  },
+  "fertility": {
+    "title": "Soil Fertility",
+    "currentLevel": "Current Fertility Level",
+    "npk": "NPK Levels",
+    "nitrogen": "Nitrogen",
+    "phosphorus": "Phosphorus",
+    "potassium": "Potassium",
+    "addReading": "Log Fertility Data",
+    "history": "Fertility History",
+    "recommendations": "Recommendations",
+    "noData": "No fertility data yet",
+    "startTracking": "Start tracking your soil fertility levels"
+  },
+  "schedule": {
+    "title": "Watering Schedule",
+    "addSlot": "Add Time Slot",
+    "editSlot": "Edit Time Slot",
+    "deleteSlot": "Delete Time Slot",
+    "nextWatering": "Next Watering",
+    "activeSchedules": "Active Schedules",
+    "noSchedules": "No schedules yet",
+    "createSchedule": "Create your first watering schedule"
+  },
+  "crops": {
+    "title": "My Crops",
+    "addCrop": "Add Crop",
+    "noCrops": "No crops yet",
+    "startAdding": "Start adding your crops to track their health",
+    "export": "Export PDF",
+    "compare": "Compare Crops"
+  },
+  "profile": {
+    "title": "Profile & Settings",
+    "account": "Account Information",
+    "settings": "Settings",
+    "theme": "Dark Mode",
+    "language": "Language",
+    "notifications": "Notifications",
+    "notificationsEnabled": "Enable Notifications",
+    "moistureAlerts": "Moisture Level Alerts",
+    "scheduleReminders": "Schedule Reminders",
+    "generalAlerts": "General Alerts",
+    "data": "Data Management",
+    "exportData": "Export Data",
+    "clearData": "Clear All Data",
+    "about": "About",
+    "version": "Version",
+    "logout": "Logout"
+  },
+  "auth": {
+    "login": "Login",
+    "signup": "Sign Up",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "forgotPassword": "Forgot Password?",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?"
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "confirm": "Confirm",
+    "back": "Back"
+  },
+  "tooltips": {
+    "moisture": "Monitor your soil moisture levels to ensure optimal watering",
+    "fertility": "Track NPK levels to maintain healthy soil composition",
+    "schedule": "Set automated watering reminders for your crops",
+    "healthScore": "Overall health indicator based on moisture and fertility data",
+    "darkMode": "Switch between light and dark themes",
+    "notifications": "Configure alert preferences for moisture and schedule updates"
+  }
+}
