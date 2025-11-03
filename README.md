@@ -1,99 +1,139 @@
-# AgroEye - Smart Agricultural Monitoring
+# AgroEye - Smart Agricultural Monitoring PWA
 
-A Progressive Web App designed to help farmers monitor and manage crucial environmental factors that affect crop growth and productivity.
+🌾 A modern Progressive Web App for monitoring soil moisture, fertility levels, and managing watering schedules to optimize crop growth and productivity.
 
-## Features
+## ✨ Features
 
-- **Real-time Moisture Monitoring**: Track soil moisture levels with visual indicators
-- **Fertility Level Tracking**: Monitor soil fertility data with historical trends
-- **Time Slot Management**: Create and manage watering schedules
-- **Dashboard Overview**: Quick access to all key metrics
-- **Data Logging**: Automatic recording of readings over time
-- **Alert System**: Notifications for low moisture levels or scheduled watering times
-- **Offline Capability**: Basic functionality when internet connection is limited
+- 📊 **Real-time Monitoring**: Track soil moisture and fertility levels
+- 📈 **Data Visualization**: Interactive charts showing historical trends
+- ⏰ **Smart Scheduling**: Automated watering schedule management
+- 🌱 **Crop Management**: Track multiple crops with health scores
+- 🤖 **AI Recommendations**: Get intelligent growing tips (when configured)
+- 🌍 **Multi-language**: Support for English, Spanish, and French
+- 🌓 **Dark Mode**: Beautiful light and dark themes
+- 📱 **PWA**: Installable on mobile and desktop with offline support
+- 🔔 **Push Notifications**: Alerts for moisture levels and schedules
+- 📤 **Export Data**: Generate PDF reports of your crop data
 
-## Tech Stack
+## 🚀 Quick Start
 
-- **Frontend**: React with TypeScript, Tailwind CSS, Vite
-- **Backend**: Lovable Cloud (Supabase) - Authentication, Database, Real-time
-- **PWA**: Service Workers for offline functionality
+### Prerequisites
 
-## Project info
+- Node.js 18+ 
+- npm or yarn
+- Supabase account (free tier available)
 
-**URL**: https://lovable.dev/projects/0b28801d-fc56-4319-b363-135e72a077ee
+### Installation
 
-## Getting Started
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/yourusername/agroeye.git
+   cd agroeye
+   ```
 
-Follow these steps to run the project locally:
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+3. **Set up environment variables**
+   ```bash
+   cp .env.example .env
+   ```
+   Edit `.env` and add your Supabase credentials (see DEPLOYMENT.md)
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+4. **Run development server**
+   ```bash
+   npm run dev
+   ```
 
-# Step 3: Install the necessary dependencies.
-npm i
+5. **Open browser**
+   Navigate to `http://localhost:5173`
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
+## 📦 Deployment
 
-## Installation as PWA
+For detailed deployment instructions to various platforms (Vercel, Netlify, Docker, etc.), see [DEPLOYMENT.md](DEPLOYMENT.md).
+
+### Quick Deploy Options
+
+- **Vercel**: `vercel` (after installing Vercel CLI)
+- **Netlify**: `netlify deploy --prod --dir=dist`
+- **Docker**: `docker-compose up`
+- **GitHub Pages**: See `.github/workflows/deploy.yml`
+
+## 🗄️ Database Setup
+
+1. Create a Supabase project at [supabase.com](https://supabase.com)
+2. Get your credentials from Settings → API
+3. Run the migrations in `supabase/migrations/` in your SQL editor
+4. Or use Supabase CLI: `supabase db push`
+
+See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed setup instructions.
+
+## 🛠️ Tech Stack
+
+- **Frontend**: React 18, TypeScript, Vite
+- **Styling**: Tailwind CSS, shadcn/ui
+- **Backend**: Supabase (PostgreSQL, Auth, Storage, Edge Functions)
+- **Charts**: Recharts
+- **i18n**: react-i18next
+- **PWA**: Service Worker, Web App Manifest
+
+## 📱 PWA Installation
 
 ### Desktop
 1. Visit the app in Chrome/Edge
 2. Click the install icon in the address bar
-3. Click "Install" in the prompt
+3. Click "Install"
 
 ### Mobile
 1. Visit the app in your mobile browser
 2. Tap the share/menu button
 3. Select "Add to Home Screen"
 
-## Development Commands
+## 🔐 Security
 
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run preview` - Preview production build
-- `npm run lint` - Run ESLint
+- Row Level Security (RLS) enabled on all tables
+- Authentication via Supabase Auth
+- Secure API key management
+- HTTPS required for PWA features
 
-## Technologies
+## 🧪 Development Commands
 
-This project is built with:
+```bash
+npm run dev      # Start development server
+npm run build    # Build for production
+npm run preview  # Preview production build
+npm run lint     # Run ESLint
+```
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-- Lovable Cloud (Supabase)
+## 📄 License
 
-## Deployment
+MIT License - see LICENSE file for details
 
-Simply open [Lovable](https://lovable.dev/projects/0b28801d-fc56-4319-b363-135e72a077ee) and click on Share -> Publish.
+## 🤝 Contributing
 
-The app can also be deployed to any static hosting service:
-- Vercel
-- Netlify
-- GitHub Pages
-- Cloudflare Pages
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-Ensure your Lovable Cloud backend is properly configured with the correct redirect URLs.
+1. Fork the project
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-## Custom Domain
+## 📞 Support
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+- 📖 [Deployment Guide](DEPLOYMENT.md)
+- 🐛 [Issue Tracker](https://github.com/yourusername/agroeye/issues)
+- 💬 [Discussions](https://github.com/yourusername/agroeye/discussions)
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+## 🙏 Acknowledgments
 
-## Security
+- Built with [Vite](https://vitejs.dev)
+- Backend powered by [Supabase](https://supabase.com)
+- UI components from [shadcn/ui](https://ui.shadcn.com)
+- Icons by [Lucide](https://lucide.dev)
 
-- Row Level Security (RLS) policies protect user data
-- Authentication required for all data operations
-- Secure environment variable handling
+---
 
-## Support
-
-For issues and questions, visit [Lovable](https://lovable.dev/projects/0b28801d-fc56-4319-b363-135e72a077ee) and use the AI assistant.
+Made with ❤️ for farmers and gardeners worldwide 🌱
