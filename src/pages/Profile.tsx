@@ -430,6 +430,13 @@ const Profile = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="en">English</SelectItem>
+                  <SelectItem value="hi">हिन्दी</SelectItem>
+                  <SelectItem value="mr">मराठी</SelectItem>
+                  <SelectItem value="ur">اردو</SelectItem>
+                  <SelectItem value="ta">தமிழ்</SelectItem>
+                  <SelectItem value="te">తెలుగు</SelectItem>
+                  <SelectItem value="kn">ಕನ್ನಡ</SelectItem>
+                  <SelectItem value="bn">বাংলা</SelectItem>
                   <SelectItem value="es">Español</SelectItem>
                   <SelectItem value="fr">Français</SelectItem>
                 </SelectContent>
