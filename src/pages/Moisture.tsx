@@ -183,7 +183,7 @@ const Moisture = () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    const status = level < 30 ? "Low" : level < 60 ? "Moderate" : "Optimal";
+    const status = level < 30 ? "low" : level > 70 ? "high" : "optimal";
 
     const { error } = await supabase.from("moisture_readings").insert({
       user_id: user.id,
