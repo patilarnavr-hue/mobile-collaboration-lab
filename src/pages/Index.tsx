@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Droplet, Sprout, Clock, Activity } from "lucide-react";
+import { Droplet, Sprout, Clock, Activity, Radio, Bug, TrendingUp } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import BottomNav from "@/components/BottomNav";
 import ChatBot from "@/components/ChatBot";
@@ -190,6 +190,18 @@ const Index = () => {
             </Button>
             <Button className="w-full" variant="secondary" onClick={() => navigate("/fertility")}>
               Log Fertility Data
+            </Button>
+            <Button className="w-full" variant="outline" onClick={() => navigate("/sensors")}>
+              <Radio className="w-4 h-4 mr-2" />
+              Connect Sensors
+            </Button>
+            <Button className="w-full" variant="outline" onClick={() => navigate("/pest-detection")}>
+              <Bug className="w-4 h-4 mr-2" />
+              Pest & Disease Detection
+            </Button>
+            <Button className="w-full" variant="outline" onClick={() => navigate("/yield-prediction")}>
+              <TrendingUp className="w-4 h-4 mr-2" />
+              Yield Prediction
             </Button>
           </CardContent>
         </Card>
