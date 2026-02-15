@@ -12,7 +12,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { User, LogOut, Mail, Download, Bell, Trash2, Globe, Camera, MapPin, CalendarDays, Activity, Moon, Sun, Languages } from "lucide-react";
 import { toast } from "sonner";
-import { useTheme } from "next-themes";
+import { useTheme } from "@/components/ThemeProvider";
 import BottomNav from "@/components/BottomNav";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
