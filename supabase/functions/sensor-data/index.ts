@@ -62,11 +62,11 @@ Deno.serve(async (req) => {
     console.log('Sensor found:', sensor.id);
 
     // Determine status based on moisture level
-    let status = 'Optimal';
+    let status = 'optimal';
     if (moisture_level < 30) {
-      status = 'Low - Water needed';
+      status = 'low';
     } else if (moisture_level > 70) {
-      status = 'High - Reduce watering';
+      status = 'high';
     }
 
     // Insert moisture reading
