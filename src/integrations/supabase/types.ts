@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      achievements: {
+        Row: {
+          achievement_key: string
+          achievement_name: string
+          description: string | null
+          earned_at: string
+          icon: string | null
+          id: string
+          user_id: string
+          xp_reward: number
+        }
+        Insert: {
+          achievement_key: string
+          achievement_name: string
+          description?: string | null
+          earned_at?: string
+          icon?: string | null
+          id?: string
+          user_id: string
+          xp_reward?: number
+        }
+        Update: {
+          achievement_key?: string
+          achievement_name?: string
+          description?: string | null
+          earned_at?: string
+          icon?: string | null
+          id?: string
+          user_id?: string
+          xp_reward?: number
+        }
+        Relationships: []
+      }
       alerts: {
         Row: {
           alert_type: string
@@ -98,6 +131,75 @@ export type Database = {
           name?: string
           notes?: string | null
           planting_date?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      farmer_xp: {
+        Row: {
+          created_at: string
+          id: string
+          last_activity_date: string | null
+          level: number
+          streak_days: number
+          total_xp: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_activity_date?: string | null
+          level?: number
+          streak_days?: number
+          total_xp?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_activity_date?: string | null
+          level?: number
+          streak_days?: number
+          total_xp?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      farmland_plots: {
+        Row: {
+          area_sqm: number | null
+          color: string | null
+          coordinates: Json
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          area_sqm?: number | null
+          color?: string | null
+          coordinates: Json
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          area_sqm?: number | null
+          color?: string | null
+          coordinates?: Json
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
           updated_at?: string
           user_id?: string
         }
@@ -194,6 +296,50 @@ export type Database = {
             columns: ["crop_id"]
             isOneToOne: false
             referencedRelation: "crops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      map_markers: {
+        Row: {
+          created_at: string
+          id: string
+          label: string
+          latitude: number
+          longitude: number
+          marker_type: string
+          metadata: Json | null
+          plot_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          label: string
+          latitude: number
+          longitude: number
+          marker_type?: string
+          metadata?: Json | null
+          plot_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          label?: string
+          latitude?: number
+          longitude?: number
+          marker_type?: string
+          metadata?: Json | null
+          plot_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "map_markers_plot_id_fkey"
+            columns: ["plot_id"]
+            isOneToOne: false
+            referencedRelation: "farmland_plots"
             referencedColumns: ["id"]
           },
         ]
