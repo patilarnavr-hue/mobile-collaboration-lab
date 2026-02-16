@@ -14,6 +14,8 @@ import CropComparison from "./pages/CropComparison";
 import Sensors from "./pages/Sensors";
 import PestDetection from "./pages/PestDetection";
 import YieldPrediction from "./pages/YieldPrediction";
+import FarmMap from "./pages/FarmMap";
+import Leaderboard from "./pages/Leaderboard";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -110,6 +112,22 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <YieldPrediction />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/farm-map"
+              element={
+                <ProtectedRoute>
+                  <FarmMap />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/leaderboard"
+              element={
+                <ProtectedRoute>
+                  <Leaderboard />
                 </ProtectedRoute>
               }
             />
