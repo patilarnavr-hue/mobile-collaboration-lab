@@ -7,7 +7,13 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.ai-recommendations]
-verify_jwt = true
+verify_jwt = false
 
 [functions.weather-data]
-verify_jwt = true
+verify_jwt = false
+
+[functions.pest-detection]
+verify_jwt = false
+
+[functions.yield-prediction]
+verify_jwt = false
