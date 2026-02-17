@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { User, LogOut, Mail, Download, Bell, Trash2, Globe, Camera, MapPin, CalendarDays, Activity, Moon, Sun, Languages } from "lucide-react";
+import ProfileRankCard from "@/components/ProfileRankCard";
 import { toast } from "sonner";
 import { useTheme } from "@/components/ThemeProvider";
 import BottomNav from "@/components/BottomNav";
@@ -303,6 +304,9 @@ const Profile = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* Rank & Achievements */}
+        <ProfileRankCard />
 
         <Card>
           <CardHeader>
