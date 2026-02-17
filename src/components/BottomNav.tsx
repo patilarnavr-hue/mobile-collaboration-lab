@@ -1,4 +1,4 @@
-import { Home, Droplet, Map, Trophy, User } from "lucide-react";
+import { Home, Droplet, Clock, Sprout, User } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
@@ -9,8 +9,8 @@ const BottomNav = () => {
   const navItems = [
     { icon: Home, label: t("nav.home"), path: "/" },
     { icon: Droplet, label: t("nav.moisture"), path: "/moisture" },
-    { icon: Map, label: "Map", path: "/farm-map" },
-    { icon: Trophy, label: "Rank", path: "/leaderboard" },
+    { icon: Clock, label: t("nav.schedule"), path: "/schedule" },
+    { icon: Sprout, label: t("nav.fertility"), path: "/fertility" },
     { icon: User, label: t("nav.profile"), path: "/profile" },
   ];
 

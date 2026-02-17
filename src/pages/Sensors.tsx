@@ -5,9 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Wifi, Plus, QrCode, Keyboard, Copy, Trash2, Radio, ArrowLeft } from "lucide-react";
+import { Wifi, Plus, QrCode, Trash2, Radio, ArrowLeft, Copy } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import BottomNav from "@/components/BottomNav";
@@ -19,19 +17,14 @@ interface Sensor {
   last_reading: number | null;
   last_reading_at: string | null;
   is_active: boolean;
-  created_at: string;
 }
 
 const Sensors = () => {
   const navigate = useNavigate();
   const [sensors, setSensors] = useState<Sensor[]>([]);
-  const [dialogOpen, setDialogOpen] = useState(false);
   const [sensorName, setSensorName] = useState("");
-  const [manualCode, setManualCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [scanning, setScanning] = useState(false);
-  const [pairingMode, setPairingMode] = useState<"new" | "existing">("new");
-  const videoRef = useRef<HTMLVideoElement>(null);
   const scannerRef = useRef<any>(null);
 
   useEffect(() => {
@@ -50,66 +43,29 @@ const Sensors = () => {
     setSensors(data || []);
   };
 
-  const generateSensorCode = () =>
-    "AGRO-" + Math.random().toString(36).substr(2, 9).toUpperCase();
-
-  const handleCreateSensor = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleQuickAdd = async () => {
+    if (!sensorName.trim()) {
+      toast.error("Please enter a name for your sensor");
+      return;
+    }
     setLoading(true);
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    const sensorCode = generateSensorCode();
+    const code = "AGRO-" + Math.random().toString(36).substr(2, 9).toUpperCase();
     const { error } = await supabase.from("sensors").insert({
       user_id: user.id,
-      sensor_code: sensorCode,
-      sensor_name: sensorName,
+      sensor_code: code,
+      sensor_name: sensorName.trim(),
       is_active: true,
     });
 
     if (error) {
-      toast.error("Failed to register sensor");
+      toast.error("Failed to add sensor");
     } else {
-      toast.success(`Sensor "${sensorName}" registered! Code: ${sensorCode}`);
+      toast.success(`Sensor added! Code: ${code}`, { duration: 5000 });
       setSensorName("");
-      setDialogOpen(false);
       fetchSensors();
-    }
-    setLoading(false);
-  };
-
-  const handlePairExisting = async (code: string) => {
-    setLoading(true);
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
-    // Check if sensor code exists and is not yet assigned
-    const { data: sensor } = await supabase
-      .from("sensors")
-      .select("*")
-      .eq("sensor_code", code.trim().toUpperCase())
-      .single();
-
-    if (!sensor) {
-      toast.error("Sensor not found. Check the code and try again.");
-    } else if (sensor.user_id === user.id) {
-      toast.info("This sensor is already paired to your account.");
-    } else {
-      // For demo: create a new sensor with the same code for this user
-      const { error } = await supabase.from("sensors").insert({
-        user_id: user.id,
-        sensor_code: code.trim().toUpperCase(),
-        sensor_name: sensor.sensor_name || "Paired Sensor",
-        is_active: true,
-      });
-      if (error) {
-        toast.error("Failed to pair sensor");
-      } else {
-        toast.success("Sensor paired successfully!");
-        setManualCode("");
-        setDialogOpen(false);
-        fetchSensors();
-      }
     }
     setLoading(false);
   };
@@ -124,31 +80,41 @@ const Sensors = () => {
       await scanner.start(
         { facingMode: "environment" },
         { fps: 10, qrbox: { width: 250, height: 250 } },
-        (decodedText) => {
-          toast.success(`Scanned code: ${decodedText}`);
-          setManualCode(decodedText);
+        async (decodedText) => {
           stopScanner();
-          handlePairExisting(decodedText);
+          toast.success(`Scanned: ${decodedText}`);
+          // Auto-add with scanned code
+          const { data: { user } } = await supabase.auth.getUser();
+          if (!user) return;
+          const { error } = await supabase.from("sensors").insert({
+            user_id: user.id,
+            sensor_code: decodedText.toUpperCase(),
+            sensor_name: `Sensor ${decodedText.slice(-4)}`,
+            is_active: true,
+          });
+          if (error) toast.error("Failed to pair sensor");
+          else {
+            toast.success("Sensor paired successfully!");
+            fetchSensors();
+          }
         },
-        () => {} // ignore errors during scanning
+        () => {}
       );
-    } catch (err) {
-      toast.error("Camera access denied or not available");
+    } catch {
+      toast.error("Camera not available");
       setScanning(false);
     }
   };
 
   const stopScanner = () => {
-    if (scannerRef.current) {
-      scannerRef.current.stop().catch(() => {});
-      scannerRef.current = null;
-    }
+    scannerRef.current?.stop().catch(() => {});
+    scannerRef.current = null;
     setScanning(false);
   };
 
-  const handleDeleteSensor = async (id: string) => {
+  const handleDelete = async (id: string) => {
     const { error } = await supabase.from("sensors").delete().eq("id", id);
-    if (error) toast.error("Failed to remove sensor");
+    if (error) toast.error("Failed to remove");
     else {
       toast.success("Sensor removed");
       fetchSensors();
@@ -169,129 +135,43 @@ const Sensors = () => {
           </Button>
           <Radio className="w-8 h-8" />
           <div>
-            <h1 className="text-2xl font-bold">Connect Sensors</h1>
-            <p className="text-sm opacity-90">Pair your IoT moisture sensors</p>
+            <h1 className="text-2xl font-bold">Sensors</h1>
+            <p className="text-sm opacity-90">Connect moisture sensors</p>
           </div>
         </div>
       </header>
 
       <main className="p-4 space-y-4 max-w-lg mx-auto">
-        {/* Pair New Sensor */}
-        <Card className="border-2 border-dashed border-primary/30">
-          <CardContent className="pt-6">
-            <div className="text-center space-y-4">
-              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
-                <Wifi className="w-8 h-8 text-primary" />
-              </div>
-              <div>
-                <h2 className="text-lg font-bold">Connect a Sensor</h2>
-                <p className="text-sm text-muted-foreground">
-                  Pair your IoT moisture sensor to receive automatic readings
-                </p>
-              </div>
-
-              <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) stopScanner(); }}>
-                <DialogTrigger asChild>
-                  <Button size="lg" className="w-full">
-                    <Plus className="w-5 h-5 mr-2" />
-                    Connect Sensor
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-md">
-                  <DialogHeader>
-                    <DialogTitle>Connect a Sensor</DialogTitle>
-                  </DialogHeader>
-
-                  <Tabs defaultValue="new" onValueChange={(v) => setPairingMode(v as "new" | "existing")}>
-                    <TabsList className="grid w-full grid-cols-2">
-                      <TabsTrigger value="new">
-                        <Plus className="w-4 h-4 mr-1" />
-                        Register New
-                      </TabsTrigger>
-                      <TabsTrigger value="existing">
-                        <QrCode className="w-4 h-4 mr-1" />
-                        Pair Existing
-                      </TabsTrigger>
-                    </TabsList>
-
-                    <TabsContent value="new" className="space-y-4 mt-4">
-                      <form onSubmit={handleCreateSensor} className="space-y-4">
-                        <div className="space-y-2">
-                          <Label>Sensor Name</Label>
-                          <Input
-                            placeholder="e.g., Garden Bed 1, Greenhouse A"
-                            value={sensorName}
-                            onChange={(e) => setSensorName(e.target.value)}
-                            required
-                          />
-                          <p className="text-xs text-muted-foreground">
-                            A unique pairing code will be generated automatically
-                          </p>
-                        </div>
-                        <Button type="submit" className="w-full" disabled={loading}>
-                          {loading ? "Registering..." : "Register Sensor"}
-                        </Button>
-                      </form>
-                    </TabsContent>
-
-                    <TabsContent value="existing" className="space-y-4 mt-4">
-                      <Tabs defaultValue="manual">
-                        <TabsList className="grid w-full grid-cols-2">
-                          <TabsTrigger value="manual">
-                            <Keyboard className="w-4 h-4 mr-1" />
-                            Enter Code
-                          </TabsTrigger>
-                          <TabsTrigger value="qr">
-                            <QrCode className="w-4 h-4 mr-1" />
-                            Scan QR
-                          </TabsTrigger>
-                        </TabsList>
-
-                        <TabsContent value="manual" className="space-y-4 mt-4">
-                          <div className="space-y-2">
-                            <Label>Sensor Code</Label>
-                            <Input
-                              placeholder="e.g., AGRO-ABC123DEF"
-                              value={manualCode}
-                              onChange={(e) => setManualCode(e.target.value.toUpperCase())}
-                            />
-                            <p className="text-xs text-muted-foreground">
-                              Enter the code printed on your sensor device
-                            </p>
-                          </div>
-                          <Button
-                            className="w-full"
-                            disabled={!manualCode || loading}
-                            onClick={() => handlePairExisting(manualCode)}
-                          >
-                            {loading ? "Pairing..." : "Pair Sensor"}
-                          </Button>
-                        </TabsContent>
-
-                        <TabsContent value="qr" className="space-y-4 mt-4">
-                          <div className="rounded-lg overflow-hidden bg-black">
-                            <div id="qr-reader" className="w-full" />
-                          </div>
-                          {!scanning ? (
-                            <Button className="w-full" onClick={startScanner}>
-                              <QrCode className="w-4 h-4 mr-2" />
-                              Start Camera
-                            </Button>
-                          ) : (
-                            <Button className="w-full" variant="secondary" onClick={stopScanner}>
-                              Stop Scanning
-                            </Button>
-                          )}
-                          <p className="text-xs text-muted-foreground text-center">
-                            Point your camera at the QR code on the sensor device
-                          </p>
-                        </TabsContent>
-                      </Tabs>
-                    </TabsContent>
-                  </Tabs>
-                </DialogContent>
-              </Dialog>
+        {/* Quick Add — single input */}
+        <Card className="border-2 border-primary/30">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg">Add a Sensor</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div>
+              <Label className="text-sm">Sensor Name</Label>
+              <Input
+                placeholder="e.g., Garden Bed, Greenhouse"
+                value={sensorName}
+                onChange={(e) => setSensorName(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleQuickAdd()}
+              />
             </div>
+            <div className="flex gap-2">
+              <Button className="flex-1" onClick={handleQuickAdd} disabled={loading}>
+                <Plus className="w-4 h-4 mr-1" />
+                {loading ? "Adding..." : "Add Sensor"}
+              </Button>
+              <Button variant="outline" onClick={scanning ? stopScanner : startScanner}>
+                <QrCode className="w-4 h-4 mr-1" />
+                {scanning ? "Stop" : "Scan QR"}
+              </Button>
+            </div>
+            {scanning && (
+              <div className="rounded-lg overflow-hidden bg-black">
+                <div id="qr-reader" className="w-full" />
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -305,17 +185,14 @@ const Sensors = () => {
           </CardHeader>
           <CardContent>
             {sensors.length === 0 ? (
-              <div className="text-center py-8">
-                <Wifi className="w-12 h-12 mx-auto text-muted-foreground mb-2" />
-                <p className="text-muted-foreground">No sensors connected yet</p>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Connect your first sensor to start receiving automatic readings
-                </p>
+              <div className="text-center py-6">
+                <Wifi className="w-10 h-10 mx-auto text-muted-foreground mb-2" />
+                <p className="text-muted-foreground text-sm">No sensors yet. Add one above!</p>
               </div>
             ) : (
               <div className="space-y-3">
                 {sensors.map((sensor) => (
-                  <div key={sensor.id} className="p-4 bg-muted rounded-lg space-y-2">
+                  <div key={sensor.id} className="p-3 bg-muted rounded-lg">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
@@ -324,27 +201,20 @@ const Sensors = () => {
                             {sensor.is_active ? "Active" : "Inactive"}
                           </Badge>
                         </div>
-                        <div className="flex items-center gap-2 mt-2">
-                          <code className="text-xs bg-background px-2 py-1 rounded">
-                            {sensor.sensor_code}
-                          </code>
-                          <Button size="sm" variant="ghost" onClick={() => copySensorCode(sensor.sensor_code)}>
+                        <div className="flex items-center gap-1 mt-1">
+                          <code className="text-xs bg-background px-2 py-0.5 rounded">{sensor.sensor_code}</code>
+                          <Button size="sm" variant="ghost" className="h-6 w-6 p-0" onClick={() => copySensorCode(sensor.sensor_code)}>
                             <Copy className="w-3 h-3" />
                           </Button>
                         </div>
                         {sensor.last_reading !== null && (
-                          <div className="mt-2 text-sm">
+                          <p className="text-sm mt-1">
                             <span className="text-muted-foreground">Last: </span>
                             <span className="font-semibold">{sensor.last_reading}%</span>
-                            {sensor.last_reading_at && (
-                              <span className="text-muted-foreground ml-2">
-                                ({new Date(sensor.last_reading_at).toLocaleString()})
-                              </span>
-                            )}
-                          </div>
+                          </p>
                         )}
                       </div>
-                      <Button size="sm" variant="ghost" onClick={() => handleDeleteSensor(sensor.id)}>
+                      <Button size="sm" variant="ghost" onClick={() => handleDelete(sensor.id)}>
                         <Trash2 className="w-4 h-4 text-destructive" />
                       </Button>
                     </div>
@@ -355,24 +225,14 @@ const Sensors = () => {
           </CardContent>
         </Card>
 
-        {/* How it works */}
+        {/* Simple instructions */}
         <Card>
-          <CardHeader>
-            <CardTitle>How Sensor Pairing Works</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3 text-sm text-muted-foreground">
-            <div className="flex gap-3">
-              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">1</span>
-              <p>Register a new sensor or enter the code printed on your device</p>
-            </div>
-            <div className="flex gap-3">
-              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">2</span>
-              <p>Configure your IoT device with the sensor code from the app</p>
-            </div>
-            <div className="flex gap-3">
-              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">3</span>
-              <p>Your sensor automatically sends moisture data to AgroEye in real-time</p>
-            </div>
+          <CardContent className="pt-6 space-y-2 text-sm text-muted-foreground">
+            <p><strong>How it works:</strong></p>
+            <p>1. Add a sensor name → get a pairing code</p>
+            <p>2. Enter the code on your IoT device</p>
+            <p>3. Readings appear automatically in AgroEye</p>
+            <p className="pt-2 text-xs">Or scan the QR code on your sensor device to pair instantly.</p>
           </CardContent>
         </Card>
       </main>
