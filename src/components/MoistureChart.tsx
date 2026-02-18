@@ -35,63 +35,58 @@ const MoistureChart = ({ readings }: MoistureChartProps) => {
   };
 
   return (
-    <Card>
-      <CardHeader>
+    <Card className="glass-card">
+      <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
-          <CardTitle>Moisture Trends</CardTitle>
+          <CardTitle className="text-base">Moisture Trends</CardTitle>
           <div className="flex gap-1">
-            <Button
-              variant={period === 7 ? "default" : "outline"}
-              size="sm"
-              onClick={() => setPeriod(7)}
-            >
-              7D
-            </Button>
-            <Button
-              variant={period === 30 ? "default" : "outline"}
-              size="sm"
-              onClick={() => setPeriod(30)}
-            >
-              30D
-            </Button>
-            <Button
-              variant={period === 90 ? "default" : "outline"}
-              size="sm"
-              onClick={() => setPeriod(90)}
-            >
-              90D
-            </Button>
+            {([7, 30, 90] as const).map((d) => (
+              <Button
+                key={d}
+                variant={period === d ? "default" : "ghost"}
+                size="sm"
+                className="h-7 px-2.5 text-xs rounded-full"
+                onClick={() => setPeriod(d)}
+              >
+                {d}D
+              </Button>
+            ))}
           </div>
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="px-2 pb-3">
         {chartData.length === 0 ? (
-          <p className="text-center text-muted-foreground py-8">
+          <p className="text-center text-muted-foreground py-8 text-sm">
             No data for the selected period
           </p>
         ) : (
-          <ChartContainer config={chartConfig} className="h-[300px]">
+          <ChartContainer config={chartConfig} className="h-[220px] w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={chartData}>
+              <LineChart data={chartData} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                 <XAxis
                   dataKey="date"
                   className="text-xs"
-                  tick={{ fill: "hsl(var(--muted-foreground))" }}
+                  tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }}
+                  tickLine={false}
+                  axisLine={false}
                 />
                 <YAxis
                   className="text-xs"
-                  tick={{ fill: "hsl(var(--muted-foreground))" }}
+                  tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }}
+                  tickLine={false}
+                  axisLine={false}
                   domain={[0, 100]}
+                  width={30}
                 />
                 <Tooltip content={<ChartTooltipContent />} />
                 <Line
                   type="monotone"
                   dataKey="level"
                   stroke="hsl(var(--primary))"
-                  strokeWidth={2}
-                  dot={{ fill: "hsl(var(--primary))", r: 4 }}
-                  activeDot={{ r: 6 }}
+                  strokeWidth={2.5}
+                  dot={{ fill: "hsl(var(--primary))", r: 3 }}
+                  activeDot={{ r: 5 }}
                 />
               </LineChart>
             </ResponsiveContainer>

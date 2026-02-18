@@ -30,60 +30,26 @@ const Index = () => {
   const checkOnboarding = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
-
-    const { data } = await supabase
-      .from("user_preferences")
-      .select("onboarding_completed")
-      .eq("user_id", user.id)
-      .maybeSingle();
-
-    if (!data) {
-      setShowOnboarding(true);
-    }
+    const { data } = await supabase.from("user_preferences").select("onboarding_completed").eq("user_id", user.id).maybeSingle();
+    if (!data) setShowOnboarding(true);
   };
 
   const fetchDashboardData = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    // Fetch latest moisture reading
-    const moistureQuery = supabase
-      .from("moisture_readings")
-      .select("moisture_level")
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: false })
-      .limit(1);
-    
+    const moistureQuery = supabase.from("moisture_readings").select("moisture_level").eq("user_id", user.id).order("created_at", { ascending: false }).limit(1);
     if (selectedCrop) moistureQuery.eq("crop_id", selectedCrop);
-    
     const { data: moistureData } = await moistureQuery.single();
     if (moistureData) setMoistureLevel(moistureData.moisture_level);
 
-    // Fetch latest fertility reading
-    const fertilityQuery = supabase
-      .from("fertility_readings")
-      .select("overall_fertility")
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: false })
-      .limit(1);
-    
+    const fertilityQuery = supabase.from("fertility_readings").select("overall_fertility").eq("user_id", user.id).order("created_at", { ascending: false }).limit(1);
     if (selectedCrop) fertilityQuery.eq("crop_id", selectedCrop);
-    
     const { data: fertilityData } = await fertilityQuery.single();
     if (fertilityData) setFertilityLevel(fertilityData.overall_fertility);
 
-    // Fetch next schedule
-    const { data: scheduleData } = await supabase
-      .from("watering_schedules")
-      .select("time_of_day, title")
-      .eq("user_id", user.id)
-      .eq("is_enabled", true)
-      .limit(1)
-      .single();
-
-    if (scheduleData) {
-      setNextSchedule(`${scheduleData.title} at ${scheduleData.time_of_day}`);
-    }
+    const { data: scheduleData } = await supabase.from("watering_schedules").select("time_of_day, title").eq("user_id", user.id).eq("is_enabled", true).limit(1).single();
+    if (scheduleData) setNextSchedule(`${scheduleData.title} at ${scheduleData.time_of_day}`);
   };
 
   const getStatusColor = (level: number | null) => {
@@ -95,121 +61,86 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      <header className="bg-primary text-primary-foreground p-6 shadow-lg">
-        <h1 className="text-3xl font-bold">AgroEye</h1>
-        <p className="text-sm opacity-90">Monitor your crops in real-time</p>
+      <header className="glass-header text-primary-foreground p-6">
+        <h1 className="text-2xl font-bold">AgroEye</h1>
+        <p className="text-xs opacity-80">Monitor your crops in real-time</p>
       </header>
 
-      <main className="p-4 space-y-6 max-w-lg mx-auto">
-        {/* Crop Selector */}
+      <main className="p-4 space-y-4 max-w-lg mx-auto animate-fade-in">
         <CropSelector value={selectedCrop || undefined} onChange={setSelectedCrop} />
-
-        {/* AI Recommendations */}
         <AIRecommendations />
-
-        {/* Alerts Panel */}
         <AlertsPanel />
-
-        {/* Weather Widget */}
         <WeatherWidget />
-
-        {/* Health Score */}
         <HealthScore cropId={selectedCrop} />
-        
         <HealthScoreChart cropId={selectedCrop} />
 
-        <div className="grid grid-cols-1 gap-4">
-          <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate("/moisture")}>
+        <div className="grid grid-cols-1 gap-3">
+          <Card className="glass-card cursor-pointer hover:shadow-lg transition-all" onClick={() => navigate("/moisture")}>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">Soil Moisture</CardTitle>
               <Droplet className={getStatusColor(moistureLevel)} />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
-                {moistureLevel !== null ? `${moistureLevel}%` : "No data"}
-              </div>
+              <div className="text-2xl font-bold">{moistureLevel !== null ? `${moistureLevel}%` : "No data"}</div>
               <p className="text-xs text-muted-foreground mt-1">
-                {moistureLevel !== null
-                  ? moistureLevel < 30
-                    ? "Low - Water needed"
-                    : moistureLevel < 60
-                    ? "Moderate"
-                    : "Optimal"
-                  : "Add your first reading"}
+                {moistureLevel !== null ? (moistureLevel < 30 ? "Low - Water needed" : moistureLevel < 60 ? "Moderate" : "Optimal") : "Add your first reading"}
               </p>
             </CardContent>
           </Card>
 
-          <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate("/fertility")}>
+          <Card className="glass-card cursor-pointer hover:shadow-lg transition-all" onClick={() => navigate("/fertility")}>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">Soil Fertility</CardTitle>
               <Sprout className={getStatusColor(fertilityLevel)} />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
-                {fertilityLevel !== null ? `${fertilityLevel}%` : "No data"}
-              </div>
+              <div className="text-2xl font-bold">{fertilityLevel !== null ? `${fertilityLevel}%` : "No data"}</div>
               <p className="text-xs text-muted-foreground mt-1">
-                {fertilityLevel !== null
-                  ? fertilityLevel < 40
-                    ? "Low - Fertilize soon"
-                    : fertilityLevel < 70
-                    ? "Moderate"
-                    : "Good"
-                  : "Add your first reading"}
+                {fertilityLevel !== null ? (fertilityLevel < 40 ? "Low - Fertilize soon" : fertilityLevel < 70 ? "Moderate" : "Good") : "Add your first reading"}
               </p>
             </CardContent>
           </Card>
 
-          <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate("/schedule")}>
+          <Card className="glass-card cursor-pointer hover:shadow-lg transition-all" onClick={() => navigate("/schedule")}>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">Next Watering</CardTitle>
               <Clock className="text-accent" />
             </CardHeader>
             <CardContent>
-              <div className="text-lg font-semibold">
-                {nextSchedule || "No schedule set"}
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">
-                Tap to manage schedules
-              </p>
+              <div className="text-lg font-semibold">{nextSchedule || "No schedule set"}</div>
+              <p className="text-xs text-muted-foreground mt-1">Tap to manage</p>
             </CardContent>
           </Card>
         </div>
 
-        <Card>
+        <Card className="glass-card">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-base">
               <Activity className="w-5 h-5" />
               Quick Actions
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-2">
-            <Button className="w-full" onClick={() => navigate("/moisture")}>
-              Add Moisture Reading
+          <CardContent className="grid grid-cols-2 gap-2">
+            <Button className="rounded-xl h-auto py-3 text-xs" onClick={() => navigate("/moisture")}>
+              <Droplet className="w-4 h-4 mr-1.5" />Moisture
             </Button>
-            <Button className="w-full" variant="secondary" onClick={() => navigate("/fertility")}>
-              Log Fertility Data
+            <Button className="rounded-xl h-auto py-3 text-xs" variant="secondary" onClick={() => navigate("/fertility")}>
+              <Sprout className="w-4 h-4 mr-1.5" />Fertility
             </Button>
-            <Button className="w-full" variant="outline" onClick={() => navigate("/sensors")}>
-              <Radio className="w-4 h-4 mr-2" />
-              Connect Sensors
+            <Button className="rounded-xl h-auto py-3 text-xs" variant="outline" onClick={() => navigate("/sensors")}>
+              <Radio className="w-4 h-4 mr-1.5" />Sensors
             </Button>
-            <Button className="w-full" variant="outline" onClick={() => navigate("/pest-detection")}>
-              <Bug className="w-4 h-4 mr-2" />
-              Pest & Disease Detection
+            <Button className="rounded-xl h-auto py-3 text-xs" variant="outline" onClick={() => navigate("/pest-detection")}>
+              <Bug className="w-4 h-4 mr-1.5" />Pests
             </Button>
-            <Button className="w-full" variant="outline" onClick={() => navigate("/yield-prediction")}>
-              <TrendingUp className="w-4 h-4 mr-2" />
-              Yield Prediction
+            <Button className="rounded-xl h-auto py-3 text-xs" variant="outline" onClick={() => navigate("/yield-prediction")}>
+              <TrendingUp className="w-4 h-4 mr-1.5" />Yield
             </Button>
-            <Button className="w-full" variant="outline" onClick={() => navigate("/farm-map")}>
-              <Map className="w-4 h-4 mr-2" />
-              Farm Map
+            <Button className="rounded-xl h-auto py-3 text-xs" variant="outline" onClick={() => navigate("/farm-map")}>
+              <Map className="w-4 h-4 mr-1.5" />Farm Map
             </Button>
-            <Button className="w-full" variant="outline" onClick={() => navigate("/leaderboard")}>
-              <Trophy className="w-4 h-4 mr-2" />
-              Leaderboard & Achievements
+            <Button className="rounded-xl h-auto py-3 text-xs col-span-2" variant="outline" onClick={() => navigate("/leaderboard")}>
+              <Trophy className="w-4 h-4 mr-1.5" />Leaderboard
             </Button>
           </CardContent>
         </Card>
@@ -217,11 +148,7 @@ const Index = () => {
 
       <BottomNav />
       <ChatBot />
-      
-      <Onboarding
-        open={showOnboarding}
-        onComplete={() => setShowOnboarding(false)}
-      />
+      <Onboarding open={showOnboarding} onComplete={() => setShowOnboarding(false)} />
     </div>
   );
 };
