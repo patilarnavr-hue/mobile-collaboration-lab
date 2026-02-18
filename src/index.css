@@ -2,154 +2,152 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
-
 @layer base {
   :root {
-    /* AgroEye Agricultural Theme - Light Mode */
-    --background: 60 56% 91%; /* Beige */
-    --foreground: 120 25% 25%; /* Dark Olive Green */
+    --background: 120 10% 97%;
+    --foreground: 120 25% 15%;
 
     --card: 0 0% 100%;
-    --card-foreground: 120 25% 25%;
+    --card-foreground: 120 25% 15%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 120 25% 25%;
+    --popover-foreground: 120 25% 15%;
 
-    --primary: 113 53% 25%; /* Forest Green */
-    --primary-foreground: 0 0% 98%;
+    --primary: 142 50% 36%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 120 25% 65%; /* Light Sea Green */
-    --secondary-foreground: 120 25% 25%;
+    --secondary: 142 20% 90%;
+    --secondary-foreground: 142 30% 25%;
 
-    --muted: 120 15% 85%;
-    --muted-foreground: 120 20% 45%;
+    --muted: 120 10% 94%;
+    --muted-foreground: 120 10% 45%;
 
-    --accent: 51 100% 50%; /* Golden Yellow */
-    --accent-foreground: 120 25% 25%;
+    --accent: 46 90% 55%;
+    --accent-foreground: 46 90% 15%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 120 20% 80%;
-    --input: 120 20% 80%;
-    --ring: 113 53% 25%;
+    --border: 120 10% 90%;
+    --input: 120 10% 90%;
+    --ring: 142 50% 36%;
 
-    --radius: 0.75rem;
+    --radius: 1rem;
 
-    --sidebar-background: 60 56% 91%;
-    --sidebar-foreground: 120 25% 25%;
-    --sidebar-primary: 113 53% 25%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 120 25% 65%;
-    --sidebar-accent-foreground: 120 25% 25%;
-    --sidebar-border: 120 20% 75%;
-    --sidebar-ring: 113 53% 25%;
+    --glass-bg: 0 0% 100% / 0.72;
+    --glass-border: 0 0% 100% / 0.3;
+    --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.08);
+
+    --sidebar-background: 120 10% 97%;
+    --sidebar-foreground: 120 25% 15%;
+    --sidebar-primary: 142 50% 36%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 142 20% 90%;
+    --sidebar-accent-foreground: 142 30% 25%;
+    --sidebar-border: 120 10% 90%;
+    --sidebar-ring: 142 50% 36%;
   }
 
   .dark {
-    /* AgroEye Agricultural Theme - Dark Mode */
-    --background: 120 25% 12%;
-    --foreground: 120 15% 90%;
+    --background: 220 15% 8%;
+    --foreground: 0 0% 95%;
 
-    --card: 120 25% 15%;
-    --card-foreground: 120 15% 90%;
+    --card: 220 15% 12%;
+    --card-foreground: 0 0% 95%;
 
-    --popover: 120 25% 15%;
-    --popover-foreground: 120 15% 90%;
+    --popover: 220 15% 12%;
+    --popover-foreground: 0 0% 95%;
 
-    --primary: 120 25% 65%; /* Light Sea Green for dark mode */
-    --primary-foreground: 120 25% 12%;
+    --primary: 142 50% 50%;
+    --primary-foreground: 220 15% 8%;
 
-    --secondary: 113 53% 35%; /* Lighter Forest Green for dark mode */
-    --secondary-foreground: 120 15% 90%;
+    --secondary: 220 15% 18%;
+    --secondary-foreground: 0 0% 90%;
 
-    --muted: 120 20% 25%;
-    --muted-foreground: 120 15% 65%;
+    --muted: 220 15% 16%;
+    --muted-foreground: 220 10% 55%;
 
-    --accent: 51 100% 60%; /* Slightly lighter Golden Yellow for dark mode */
-    --accent-foreground: 120 25% 12%;
+    --accent: 46 90% 60%;
+    --accent-foreground: 220 15% 8%;
 
-    --destructive: 0 62.8% 50.6%;
+    --destructive: 0 62% 50%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 120 20% 25%;
-    --input: 120 20% 25%;
-    --ring: 120 25% 65%;
-    
-    --sidebar-background: 120 25% 12%;
-    --sidebar-foreground: 120 15% 90%;
-    --sidebar-primary: 120 25% 65%;
-    --sidebar-primary-foreground: 120 25% 12%;
-    --sidebar-accent: 120 20% 25%;
-    --sidebar-accent-foreground: 120 15% 90%;
-    --sidebar-border: 120 20% 20%;
-    --sidebar-ring: 120 25% 65%;
+    --border: 220 15% 18%;
+    --input: 220 15% 18%;
+    --ring: 142 50% 50%;
+
+    --glass-bg: 220 15% 12% / 0.72;
+    --glass-border: 0 0% 100% / 0.08;
+    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+
+    --sidebar-background: 220 15% 8%;
+    --sidebar-foreground: 0 0% 95%;
+    --sidebar-primary: 142 50% 50%;
+    --sidebar-primary-foreground: 220 15% 8%;
+    --sidebar-accent: 220 15% 18%;
+    --sidebar-accent-foreground: 0 0% 90%;
+    --sidebar-border: 220 15% 18%;
+    --sidebar-ring: 142 50% 50%;
   }
 }
 
 @layer base {
   * {
     @apply border-border;
-    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
   }
 
   body {
-    @apply bg-background text-foreground font-sans;
+    @apply bg-background text-foreground font-sans antialiased;
   }
 
-  /* Typography */
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Roboto Slab', serif;
+    font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    @apply tracking-tight;
+  }
+}
+
+@layer components {
+  .glass-card {
+    background: hsl(var(--glass-bg));
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid hsl(var(--glass-border));
+    box-shadow: var(--glass-shadow);
+  }
+
+  .glass-nav {
+    background: hsl(var(--glass-bg));
+    backdrop-filter: blur(24px) saturate(200%);
+    -webkit-backdrop-filter: blur(24px) saturate(200%);
+    border-top: 1px solid hsl(var(--glass-border));
+  }
+
+  .glass-header {
+    background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary) / 0.85));
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
   }
 }
 
 @layer utilities {
   .animate-fade-in {
-    animation: fadeIn 0.5s ease-in-out;
+    animation: fadeIn 0.4s ease-out;
   }
   
   .animate-slide-up {
-    animation: slideUp 0.5s ease-out;
-  }
-  
-  .animate-slide-in {
-    animation: slideIn 0.3s ease-out;
+    animation: slideUp 0.4s ease-out;
   }
   
   @keyframes fadeIn {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
   }
   
   @keyframes slideUp {
-    from {
-      opacity: 0;
-      transform: translateY(20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-  
-  @keyframes slideIn {
-    from {
-      opacity: 0;
-      transform: translateX(-20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateX(0);
-    }
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
   }
 }
 
-/* Load Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@400;600;700&family=Open+Sans:wght@300;400;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
