@@ -6,9 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Map, Trash2, ArrowLeft, Layers, MapPin, Pencil } from "lucide-react";
+import { Map, Trash2, ArrowLeft, Layers, MapPin } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface FarmlandPlot {
   id: string;
@@ -28,6 +29,12 @@ interface MapMarker {
   longitude: number;
 }
 
+interface SensorLocation {
+  id: string;
+  sensor_name: string;
+  last_reading: number | null;
+}
+
 const FarmMap = () => {
   const navigate = useNavigate();
   const mapRef = useRef<HTMLDivElement>(null);
@@ -35,6 +42,7 @@ const FarmMap = () => {
   const drawnItems = useRef<any>(null);
   const [plots, setPlots] = useState<FarmlandPlot[]>([]);
   const [markers, setMarkers] = useState<MapMarker[]>([]);
+  const [sensors, setSensors] = useState<SensorLocation[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [plotName, setPlotName] = useState("");
   const [plotDescription, setPlotDescription] = useState("");
@@ -46,6 +54,7 @@ const FarmMap = () => {
   const [pendingMarkerLatLng, setPendingMarkerLatLng] = useState<[number, number] | null>(null);
   const [addingMarker, setAddingMarker] = useState(false);
   const [mapReady, setMapReady] = useState(false);
+  const [mapLoading, setMapLoading] = useState(true);
 
   useEffect(() => { fetchData(); }, []);
 
@@ -55,18 +64,20 @@ const FarmMap = () => {
   }, []);
 
   useEffect(() => {
-    if (mapReady && leafletMap.current) { renderPlotsOnMap(); renderMarkersOnMap(); }
-  }, [plots, markers, mapReady]);
+    if (mapReady && leafletMap.current) { renderPlotsOnMap(); renderMarkersOnMap(); renderSensorsOnMap(); }
+  }, [plots, markers, sensors, mapReady]);
 
   const fetchData = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
-    const [plotsRes, markersRes] = await Promise.all([
+    const [plotsRes, markersRes, sensorsRes] = await Promise.all([
       supabase.from("farmland_plots").select("*").eq("user_id", user.id).order("created_at"),
       supabase.from("map_markers").select("*").eq("user_id", user.id),
+      supabase.from("sensors").select("id, sensor_name, last_reading").eq("user_id", user.id).eq("is_active", true),
     ]);
     setPlots((plotsRes.data as any[]) || []);
     setMarkers((markersRes.data as any[]) || []);
+    setSensors((sensorsRes.data as any[]) || []);
   };
 
   const initMap = async () => {
@@ -82,7 +93,9 @@ const FarmMap = () => {
       shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
     });
 
-    const map = L.map(mapRef.current!, { center: [20.5937, 78.9629], zoom: 5 });
+    const map = L.map(mapRef.current!, { center: [20.5937, 78.9629], zoom: 5, zoomControl: false });
+
+    L.control.zoom({ position: "bottomright" }).addTo(map);
 
     L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
       attribution: "Tiles © Esri", maxZoom: 19,
@@ -95,6 +108,7 @@ const FarmMap = () => {
     drawnItems.current = drawn;
 
     const drawControl = new (L as any).Control.Draw({
+      position: "topright",
       draw: {
         polygon: { shapeOptions: { color: "#22c55e", weight: 3 } },
         polyline: false, rectangle: { shapeOptions: { color: "#22c55e" } },
@@ -126,13 +140,14 @@ const FarmMap = () => {
 
     leafletMap.current = map;
     setMapReady(true);
+    setMapLoading(false);
 
-    // Zoom to exact GPS location with high zoom
+    // High-accuracy GPS zoom
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (pos) => { map.setView([pos.coords.latitude, pos.coords.longitude], 18); },
         () => {},
-        { enableHighAccuracy: true, timeout: 10000 }
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
       );
     }
   };
@@ -171,14 +186,40 @@ const FarmMap = () => {
   const renderMarkersOnMap = async () => {
     if (!leafletMap.current) return;
     const L = await import("leaflet");
-    leafletMap.current.eachLayer((layer: any) => { if (layer instanceof L.Marker) leafletMap.current.removeLayer(layer); });
+    leafletMap.current.eachLayer((layer: any) => {
+      if (layer instanceof L.Marker && !(layer as any)._isSensor) leafletMap.current.removeLayer(layer);
+    });
     markers.forEach((m) => {
       const icon = L.divIcon({
         className: "custom-marker",
-        html: `<div style="background:${m.marker_type === "sensor" ? "#eab308" : "#22c55e"};width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.3);font-size:11px;">📍</div>`,
-        iconSize: [24, 24], iconAnchor: [12, 12],
+        html: `<div style="background:${m.marker_type === "sensor" ? "#eab308" : "#22c55e"};width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.3);font-size:12px;">📍</div>`,
+        iconSize: [28, 28], iconAnchor: [14, 14],
       });
       L.marker([m.latitude, m.longitude], { icon }).bindTooltip(m.label).addTo(leafletMap.current);
+    });
+  };
+
+  const renderSensorsOnMap = async () => {
+    if (!leafletMap.current) return;
+    const L = await import("leaflet");
+    // Remove old sensor markers
+    leafletMap.current.eachLayer((layer: any) => {
+      if ((layer as any)._isSensor) leafletMap.current.removeLayer(layer);
+    });
+    // Place sensor markers at user's location (since sensors don't have lat/lng yet)
+    // For now, show them near the map center with offsets
+    const center = leafletMap.current.getCenter();
+    sensors.forEach((s, idx) => {
+      const offset = (idx - sensors.length / 2) * 0.0005;
+      const icon = L.divIcon({
+        className: "sensor-marker",
+        html: `<div style="background:#3b82f6;width:32px;height:32px;border-radius:12px;display:flex;align-items:center;justify-content:center;border:2px solid white;box-shadow:0 2px 12px rgba(59,130,246,0.4);font-size:13px;color:white;font-weight:600;">${s.last_reading !== null ? s.last_reading + '%' : '📡'}</div>`,
+        iconSize: [32, 32], iconAnchor: [16, 16],
+      });
+      const marker = L.marker([center.lat + offset, center.lng + offset], { icon }) as any;
+      marker._isSensor = true;
+      marker.bindTooltip(`${s.sensor_name}${s.last_reading !== null ? ` - ${s.last_reading}%` : ""}`);
+      marker.addTo(leafletMap.current);
     });
   };
 
@@ -215,13 +256,13 @@ const FarmMap = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <header className="glass-header text-primary-foreground p-4 flex items-center gap-3">
-        <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="text-primary-foreground hover:bg-primary-foreground/10">
+        <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="text-primary-foreground hover:bg-primary-foreground/10 rounded-full">
           <ArrowLeft className="w-5 h-5" />
         </Button>
         <Map className="w-6 h-6" />
         <div>
           <h1 className="text-lg font-bold">Farm Map</h1>
-          <p className="text-[10px] opacity-80">Draw boundaries & map farmland</p>
+          <p className="text-[10px] opacity-80">Draw boundaries & track sensors</p>
         </div>
       </header>
 
@@ -229,15 +270,26 @@ const FarmMap = () => {
         <Button variant="outline" size="sm" className="rounded-full text-xs" onClick={() => {
           setAddingMarker(true);
           if (leafletMap.current) leafletMap.current.getContainer().style.cursor = "crosshair";
-          toast.info("Tap map to place marker");
+          toast.info("Tap the map to place a marker");
         }}>
           <MapPin className="w-3 h-3 mr-1" /> Add Marker
         </Button>
         <Badge variant="secondary" className="text-xs"><Layers className="w-3 h-3 mr-1" />{plots.length} plots</Badge>
         <Badge variant="secondary" className="text-xs"><MapPin className="w-3 h-3 mr-1" />{markers.length} markers</Badge>
+        {sensors.length > 0 && (
+          <Badge variant="default" className="text-xs">📡 {sensors.length} sensors</Badge>
+        )}
       </div>
 
-      <div className="flex-1 mx-3 mb-3 rounded-2xl overflow-hidden border border-border/50 shadow-lg" style={{ minHeight: "60vh" }}>
+      <div className="flex-1 mx-3 mb-3 rounded-2xl overflow-hidden border border-border/50 shadow-lg relative" style={{ minHeight: "55vh" }}>
+        {mapLoading && (
+          <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/80">
+            <div className="text-center space-y-2">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto" />
+              <p className="text-xs text-muted-foreground">Loading map...</p>
+            </div>
+          </div>
+        )}
         <div ref={mapRef} style={{ height: "100%", width: "100%" }} />
       </div>
 
@@ -249,12 +301,12 @@ const FarmMap = () => {
             </CardHeader>
             <CardContent className="space-y-2">
               {plots.map((p) => (
-                <div key={p.id} className="flex items-center justify-between p-2.5 bg-muted/50 rounded-xl text-sm">
+                <div key={p.id} className="flex items-center justify-between p-2.5 bg-muted/40 rounded-xl text-sm">
                   <div>
                     <p className="font-medium">{p.name}</p>
                     {p.area_sqm && <Badge variant="outline" className="text-[10px] mt-0.5">{(p.area_sqm / 10000).toFixed(2)} ha</Badge>}
                   </div>
-                  <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => handleDeletePlot(p.id)}>
+                  <Button size="sm" variant="ghost" className="h-7 w-7 p-0 rounded-full" onClick={() => handleDeletePlot(p.id)}>
                     <Trash2 className="w-3.5 h-3.5 text-destructive" />
                   </Button>
                 </div>
@@ -265,7 +317,7 @@ const FarmMap = () => {
       )}
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="rounded-2xl">
+        <DialogContent className="rounded-3xl">
           <DialogHeader><DialogTitle>Save Plot</DialogTitle></DialogHeader>
           <div className="space-y-3">
             <div><Label>Name</Label><Input placeholder="e.g., North Field" value={plotName} onChange={(e) => setPlotName(e.target.value)} className="rounded-xl" /></div>
@@ -277,7 +329,7 @@ const FarmMap = () => {
       </Dialog>
 
       <Dialog open={markerDialogOpen} onOpenChange={setMarkerDialogOpen}>
-        <DialogContent className="rounded-2xl">
+        <DialogContent className="rounded-3xl">
           <DialogHeader><DialogTitle>Add Marker</DialogTitle></DialogHeader>
           <div className="space-y-3">
             <div><Label>Label</Label><Input placeholder="e.g., Sensor A" value={markerLabel} onChange={(e) => setMarkerLabel(e.target.value)} className="rounded-xl" /></div>

@@ -4,23 +4,23 @@
 
 @layer base {
   :root {
-    --background: 120 10% 97%;
+    --background: 100 8% 95%;
     --foreground: 120 25% 15%;
 
-    --card: 0 0% 100%;
+    --card: 60 10% 96%;
     --card-foreground: 120 25% 15%;
 
-    --popover: 0 0% 100%;
+    --popover: 60 10% 96%;
     --popover-foreground: 120 25% 15%;
 
     --primary: 142 50% 36%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 142 20% 90%;
+    --secondary: 142 18% 88%;
     --secondary-foreground: 142 30% 25%;
 
-    --muted: 120 10% 94%;
-    --muted-foreground: 120 10% 45%;
+    --muted: 100 8% 90%;
+    --muted-foreground: 120 8% 42%;
 
     --accent: 46 90% 55%;
     --accent-foreground: 46 90% 15%;
@@ -28,23 +28,23 @@
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 120 10% 90%;
-    --input: 120 10% 90%;
+    --border: 120 8% 86%;
+    --input: 120 8% 86%;
     --ring: 142 50% 36%;
 
-    --radius: 1rem;
+    --radius: 1.25rem;
 
-    --glass-bg: 0 0% 100% / 0.72;
-    --glass-border: 0 0% 100% / 0.3;
-    --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.08);
+    --glass-bg: 60 10% 97% / 0.65;
+    --glass-border: 0 0% 100% / 0.35;
+    --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.06);
 
-    --sidebar-background: 120 10% 97%;
+    --sidebar-background: 100 8% 95%;
     --sidebar-foreground: 120 25% 15%;
     --sidebar-primary: 142 50% 36%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 142 20% 90%;
+    --sidebar-accent: 142 18% 88%;
     --sidebar-accent-foreground: 142 30% 25%;
-    --sidebar-border: 120 10% 90%;
+    --sidebar-border: 120 8% 86%;
     --sidebar-ring: 142 50% 36%;
   }
 
@@ -110,23 +110,30 @@
 @layer components {
   .glass-card {
     background: hsl(var(--glass-bg));
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
     border: 1px solid hsl(var(--glass-border));
     box-shadow: var(--glass-shadow);
   }
 
   .glass-nav {
     background: hsl(var(--glass-bg));
-    backdrop-filter: blur(24px) saturate(200%);
-    -webkit-backdrop-filter: blur(24px) saturate(200%);
-    border-top: 1px solid hsl(var(--glass-border));
+    backdrop-filter: blur(28px) saturate(200%);
+    -webkit-backdrop-filter: blur(28px) saturate(200%);
+    border-top: 0.5px solid hsl(var(--glass-border));
   }
 
   .glass-header {
     background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary) / 0.85));
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
+  }
+
+  .glass-input {
+    background: hsl(var(--glass-bg));
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid hsl(var(--glass-border));
   }
 }
 

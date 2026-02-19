@@ -6,13 +6,20 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
-import { Droplet, Plus, Wifi, Copy, Trash2, QrCode } from "lucide-react";
+import { Droplet, Plus, Wifi, Copy, Trash2, QrCode, Info } from "lucide-react";
 import { toast } from "sonner";
 import BottomNav from "@/components/BottomNav";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import MoistureChart from "@/components/MoistureChart";
 import EmptyState from "@/components/EmptyState";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface MoistureReading {
   id: string;
@@ -38,16 +45,17 @@ const Moisture = () => {
   const [sensors, setSensors] = useState<Sensor[]>([]);
   const [moistureLevel, setMoistureLevel] = useState("");
   const [notes, setNotes] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [sensorName, setSensorName] = useState("");
   const [sensorLoading, setSensorLoading] = useState(false);
   const [scanning, setScanning] = useState(false);
+  const [pairingGuide, setPairingGuide] = useState(false);
   const scannerRef = useRef<any>(null);
 
   useEffect(() => {
-    fetchReadings();
-    fetchSensors();
+    Promise.all([fetchReadings(), fetchSensors()]).then(() => setLoading(false));
 
     const readingsChannel = supabase
       .channel("moisture_readings_changes")
@@ -69,26 +77,24 @@ const Moisture = () => {
   const fetchReadings = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
-    const { data, error } = await supabase
+    const { data } = await supabase
       .from("moisture_readings")
       .select("*")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false })
       .limit(50);
-    if (error) toast.error("Failed to fetch readings");
-    else setReadings(data || []);
+    setReadings(data || []);
   };
 
   const fetchSensors = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
-    const { data, error } = await supabase
+    const { data } = await supabase
       .from("sensors")
       .select("*")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false });
-    if (error) toast.error("Failed to fetch sensors");
-    else setSensors(data || []);
+    setSensors(data || []);
   };
 
   const handleAddSensor = async () => {
@@ -99,15 +105,12 @@ const Moisture = () => {
 
     const code = "AGRO-" + Math.random().toString(36).substr(2, 9).toUpperCase();
     const { error } = await supabase.from("sensors").insert({
-      user_id: user.id,
-      sensor_code: code,
-      sensor_name: sensorName.trim(),
-      is_active: true,
+      user_id: user.id, sensor_code: code, sensor_name: sensorName.trim(), is_active: true,
     });
 
     if (error) toast.error("Failed to add sensor");
     else {
-      toast.success(`Sensor added! Code: ${code}`, { duration: 5000 });
+      toast.success(`Sensor paired! Code: ${code}`, { duration: 6000 });
       setSensorName("");
       fetchSensors();
     }
@@ -129,10 +132,8 @@ const Moisture = () => {
           const { data: { user } } = await supabase.auth.getUser();
           if (!user) return;
           const { error } = await supabase.from("sensors").insert({
-            user_id: user.id,
-            sensor_code: decodedText.toUpperCase(),
-            sensor_name: `Sensor ${decodedText.slice(-4)}`,
-            is_active: true,
+            user_id: user.id, sensor_code: decodedText.toUpperCase(),
+            sensor_name: `Sensor ${decodedText.slice(-4)}`, is_active: true,
           });
           if (error) toast.error("Failed to pair sensor");
           else { toast.success("Sensor paired!"); fetchSensors(); }
@@ -156,14 +157,14 @@ const Moisture = () => {
 
   const copySensorCode = (code: string) => {
     navigator.clipboard.writeText(code);
-    toast.success("Code copied!");
+    toast.success("Code copied! Use this to configure your hardware sensor.");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    setSubmitting(true);
     const level = parseFloat(moistureLevel);
-    if (level < 0 || level > 100) { toast.error("Must be 0-100"); setLoading(false); return; }
+    if (level < 0 || level > 100) { toast.error("Must be 0-100"); setSubmitting(false); return; }
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
@@ -173,12 +174,34 @@ const Moisture = () => {
     });
     if (error) toast.error("Failed to add reading");
     else { toast.success("Reading saved"); setMoistureLevel(""); setNotes(""); setDialogOpen(false); }
-    setLoading(false);
+    setSubmitting(false);
   };
 
-  const currentLevel = readings[0]?.moisture_level || 0;
-  const currentStatus = readings[0]?.status || "No data";
+  // Use latest sensor reading if available, otherwise use manual reading
+  const latestSensorReading = sensors.find(s => s.last_reading !== null);
+  const currentLevel = latestSensorReading?.last_reading ?? readings[0]?.moisture_level ?? 0;
+  const currentStatus = currentLevel < 30 ? "low" : currentLevel > 70 ? "high" : "optimal";
   const statusColor = currentLevel < 30 ? "text-destructive" : currentLevel > 70 ? "text-primary" : "text-accent";
+  const dataSource = latestSensorReading ? `From ${latestSensorReading.sensor_name}` : "Manual reading";
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background pb-20">
+        <header className="glass-header text-primary-foreground p-6">
+          <div className="flex items-center gap-3">
+            <Droplet className="w-7 h-7" />
+            <div><h1 className="text-xl font-bold">Soil Moisture</h1></div>
+          </div>
+        </header>
+        <main className="p-4 space-y-4 max-w-lg mx-auto">
+          <Skeleton className="h-32 w-full rounded-2xl" />
+          <Skeleton className="h-24 w-full rounded-2xl" />
+          <Skeleton className="h-48 w-full rounded-2xl" />
+        </main>
+        <BottomNav />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background pb-20">
@@ -199,32 +222,57 @@ const Moisture = () => {
             <div className="text-center">
               <div className={`text-5xl font-bold ${statusColor}`}>{currentLevel}%</div>
               <Badge variant="secondary" className="mt-2 capitalize">{currentStatus}</Badge>
+              <p className="text-[10px] text-muted-foreground mt-1">{dataSource}</p>
             </div>
             <Progress value={currentLevel} className="h-2 rounded-full" />
           </CardContent>
         </Card>
 
-        {/* Quick Sensor Pairing */}
+        {/* Easy Sensor Pairing */}
         <Card className="glass-card border-primary/20">
           <CardHeader className="pb-2">
-            <CardTitle className="text-base flex items-center gap-2">
-              <Wifi className="w-4 h-4" />
-              Pair a Sensor
-            </CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm flex items-center gap-2">
+                <Wifi className="w-4 h-4" /> Pair a Sensor
+              </CardTitle>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button size="sm" variant="ghost" className="h-7 w-7 p-0 rounded-full" onClick={() => setPairingGuide(!pairingGuide)}>
+                      <Info className="w-3.5 h-3.5" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="left" className="max-w-[200px] text-xs">
+                    Enter a name & tap + to generate a code. Flash this code to your ESP32/Arduino sensor.
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
           </CardHeader>
           <CardContent className="space-y-3">
+            {pairingGuide && (
+              <div className="bg-primary/5 rounded-xl p-3 text-xs space-y-1 border border-primary/10">
+                <p className="font-semibold text-primary">How to pair a sensor:</p>
+                <ol className="list-decimal pl-4 space-y-0.5 text-muted-foreground">
+                  <li>Enter a friendly name (e.g., "Garden Bed")</li>
+                  <li>Tap <strong>+</strong> to generate a unique code</li>
+                  <li>Copy the code & enter it into your sensor's config</li>
+                  <li>Or scan the QR code on your sensor hardware</li>
+                </ol>
+              </div>
+            )}
             <div className="flex gap-2">
               <Input
-                placeholder="Sensor name (e.g., Garden Bed)"
+                placeholder="Sensor name (e.g., Field A)"
                 value={sensorName}
                 onChange={(e) => setSensorName(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleAddSensor()}
-                className="flex-1 rounded-xl text-sm h-9"
+                className="flex-1 rounded-xl text-sm h-10"
               />
-              <Button size="sm" className="rounded-xl h-9" onClick={handleAddSensor} disabled={sensorLoading}>
+              <Button size="sm" className="rounded-xl h-10 px-3" onClick={handleAddSensor} disabled={sensorLoading}>
                 <Plus className="w-4 h-4" />
               </Button>
-              <Button size="sm" variant="outline" className="rounded-xl h-9" onClick={scanning ? stopScanner : startScanner}>
+              <Button size="sm" variant="outline" className="rounded-xl h-10 px-3" onClick={scanning ? stopScanner : startScanner}>
                 <QrCode className="w-4 h-4" />
               </Button>
             </div>
@@ -234,14 +282,14 @@ const Moisture = () => {
               </div>
             )}
             {sensors.length > 0 && (
-              <div className="space-y-2 pt-2">
+              <div className="space-y-2 pt-1">
                 {sensors.map((s) => (
-                  <div key={s.id} className="flex items-center justify-between p-2.5 bg-muted/50 rounded-xl text-sm">
+                  <div key={s.id} className="flex items-center justify-between p-2.5 bg-muted/40 rounded-xl text-sm">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5">
                         <span className="font-medium truncate">{s.sensor_name}</span>
                         <Badge variant={s.is_active ? "default" : "secondary"} className="text-[10px] h-4">
-                          {s.is_active ? "On" : "Off"}
+                          {s.is_active ? "Live" : "Off"}
                         </Badge>
                       </div>
                       <div className="flex items-center gap-1 mt-0.5">
@@ -251,10 +299,10 @@ const Moisture = () => {
                         </button>
                       </div>
                       {s.last_reading !== null && (
-                        <p className="text-xs text-muted-foreground mt-0.5">Last: {s.last_reading}%</p>
+                        <p className="text-xs text-primary mt-0.5 font-medium">Reading: {s.last_reading}%</p>
                       )}
                     </div>
-                    <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => handleDeleteSensor(s.id)}>
+                    <Button size="sm" variant="ghost" className="h-7 w-7 p-0 rounded-full" onClick={() => handleDeleteSensor(s.id)}>
                       <Trash2 className="w-3.5 h-3.5 text-destructive" />
                     </Button>
                   </div>
@@ -268,14 +316,11 @@ const Moisture = () => {
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
             <Button className="w-full rounded-xl h-11" size="lg">
-              <Plus className="w-5 h-5 mr-2" />
-              Add Manual Reading
+              <Plus className="w-5 h-5 mr-2" /> Add Manual Reading
             </Button>
           </DialogTrigger>
-          <DialogContent className="rounded-2xl">
-            <DialogHeader>
-              <DialogTitle>Record Moisture</DialogTitle>
-            </DialogHeader>
+          <DialogContent className="rounded-3xl">
+            <DialogHeader><DialogTitle>Record Moisture</DialogTitle></DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <Label>Moisture Level (%)</Label>
@@ -286,8 +331,8 @@ const Moisture = () => {
                 <Label>Notes (optional)</Label>
                 <Textarea placeholder="Observations..." value={notes} onChange={(e) => setNotes(e.target.value)} className="rounded-xl" />
               </div>
-              <Button type="submit" className="w-full rounded-xl" disabled={loading}>
-                {loading ? "Saving..." : "Save"}
+              <Button type="submit" className="w-full rounded-xl" disabled={submitting}>
+                {submitting ? "Saving..." : "Save"}
               </Button>
             </form>
           </DialogContent>
@@ -299,7 +344,7 @@ const Moisture = () => {
         {/* Recent Readings */}
         <Card className="glass-card">
           <CardHeader className="pb-2">
-            <CardTitle className="text-base">Recent Readings</CardTitle>
+            <CardTitle className="text-sm">Recent Readings</CardTitle>
           </CardHeader>
           <CardContent>
             {readings.length === 0 ? (
@@ -313,11 +358,11 @@ const Moisture = () => {
             ) : (
               <div className="space-y-2">
                 {readings.slice(0, 10).map((r) => (
-                  <div key={r.id} className="flex items-center justify-between p-2.5 bg-muted/50 rounded-xl">
+                  <div key={r.id} className="flex items-center justify-between p-2.5 bg-muted/40 rounded-xl">
                     <div>
                       <p className="font-semibold text-sm">{r.moisture_level}%</p>
-                      <p className="text-xs text-muted-foreground">
-                        {new Date(r.created_at).toLocaleDateString()}
+                      <p className="text-[10px] text-muted-foreground">
+                        {new Date(r.created_at).toLocaleDateString()} {new Date(r.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </p>
                     </div>
                     <Badge variant="secondary" className="capitalize text-xs">{r.status}</Badge>

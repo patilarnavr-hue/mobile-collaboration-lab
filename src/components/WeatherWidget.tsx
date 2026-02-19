@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Cloud, Droplets, Wind, ThermometerSun, Sun, Gauge, Leaf } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { Cloud, Droplets, Wind, ThermometerSun, Gauge } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface WeatherData {
   temperature: number;
@@ -23,49 +23,57 @@ const WeatherWidget = () => {
 
   const getLocationAndFetch = () => {
     if (!navigator.geolocation) {
-      fetchWeather(20.5937, 78.9629, "Default Location");
+      fetchOpenMeteo(20.5937, 78.9629, "Default Location");
       return;
     }
 
     navigator.geolocation.getCurrentPosition(
-      async (pos) => {
+      (pos) => {
         const { latitude, longitude } = pos.coords;
-        // Reverse geocode for location name
-        try {
-          const res = await fetch(
-            `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m&timezone=auto`
-          );
-          const data = await res.json();
-          setLocationName(data.timezone?.replace(/_/g, " ").split("/").pop() || "Your Farm");
-        } catch {
-          setLocationName("Your Farm");
-        }
-        fetchWeather(latitude, longitude, "Your Farm");
+        fetchOpenMeteo(latitude, longitude, "Your Farm");
       },
       () => {
-        setLocationName("Default Location");
-        fetchWeather(20.5937, 78.9629, "Default Location");
+        fetchOpenMeteo(20.5937, 78.9629, "Default Location");
       },
-      { timeout: 5000 }
+      { enableHighAccuracy: true, timeout: 10000 }
     );
   };
 
-  const fetchWeather = async (lat: number, lon: number, name: string) => {
+  const fetchOpenMeteo = async (lat: number, lon: number, fallbackName: string) => {
     try {
-      const { data, error } = await supabase.functions.invoke("weather-data", {
-        body: { location: { lat, lon, name } },
-      });
+      const res = await fetch(
+        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,precipitation,wind_speed_10m,weather_code&timezone=auto`
+      );
+      const data = await res.json();
+      
+      const locName = data.timezone?.replace(/_/g, " ").split("/").pop() || fallbackName;
+      setLocationName(locName);
 
-      if (error) throw error;
-      setWeather(data.current);
+      const current = data.current;
+      const weatherCode = current.weather_code;
+      
+      const conditionMap: Record<number, string> = {
+        0: "Clear", 1: "Mainly Clear", 2: "Partly Cloudy", 3: "Overcast",
+        45: "Foggy", 48: "Foggy", 51: "Light Drizzle", 53: "Drizzle",
+        55: "Heavy Drizzle", 61: "Light Rain", 63: "Rain", 65: "Heavy Rain",
+        71: "Light Snow", 73: "Snow", 75: "Heavy Snow", 80: "Rain Showers",
+        81: "Rain Showers", 82: "Heavy Showers", 95: "Thunderstorm",
+      };
+
+      setWeather({
+        temperature: current.temperature_2m,
+        humidity: current.relative_humidity_2m,
+        precipitation: current.precipitation,
+        windSpeed: current.wind_speed_10m,
+        condition: conditionMap[weatherCode] || "Unknown",
+      });
     } catch (error) {
-      console.error("Error fetching weather:", error);
+      console.error("Weather fetch error:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  // Farming-relevant calculations
   const getDewPoint = (temp: number, humidity: number) => {
     const a = 17.27, b = 237.7;
     const gamma = (a * temp) / (b + temp) + Math.log(humidity / 100);
@@ -86,15 +94,15 @@ const WeatherWidget = () => {
 
   if (loading) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Cloud className="w-5 h-5" />
-            Weather
+      <Card className="glass-card">
+        <CardHeader className="pb-2">
+          <CardTitle className="flex items-center gap-2 text-sm">
+            <Cloud className="w-4 h-4" /> Weather
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="animate-pulse text-muted-foreground">Detecting location...</div>
+        <CardContent className="space-y-2">
+          <Skeleton className="h-4 w-3/4" />
+          <Skeleton className="h-4 w-1/2" />
         </CardContent>
       </Card>
     );
@@ -107,66 +115,60 @@ const WeatherWidget = () => {
   const sprayCondition = getSprayCondition(weather.windSpeed, weather.humidity);
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Cloud className="w-5 h-5" />
+    <Card className="glass-card">
+      <CardHeader className="pb-2">
+        <CardTitle className="flex items-center gap-2 text-sm">
+          <Cloud className="w-4 h-4" />
           Weather — {locationName}
         </CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
-          {/* Core metrics */}
           <div className="grid grid-cols-2 gap-3">
-            <div className="flex items-center gap-2">
-              <ThermometerSun className="w-4 h-4 text-orange-500 flex-shrink-0" />
+            <div className="flex items-center gap-2 p-2 bg-muted/40 rounded-xl">
+              <ThermometerSun className="w-4 h-4 text-accent flex-shrink-0" />
               <div>
-                <p className="text-xs text-muted-foreground">Temperature</p>
-                <p className="font-semibold">{weather.temperature.toFixed(1)}°C</p>
+                <p className="text-[10px] text-muted-foreground">Temp</p>
+                <p className="text-sm font-semibold">{weather.temperature.toFixed(1)}°C</p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <Droplets className="w-4 h-4 text-blue-500 flex-shrink-0" />
+            <div className="flex items-center gap-2 p-2 bg-muted/40 rounded-xl">
+              <Droplets className="w-4 h-4 text-primary flex-shrink-0" />
               <div>
-                <p className="text-xs text-muted-foreground">Humidity</p>
-                <p className="font-semibold">{weather.humidity}%</p>
+                <p className="text-[10px] text-muted-foreground">Humidity</p>
+                <p className="text-sm font-semibold">{weather.humidity}%</p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 p-2 bg-muted/40 rounded-xl">
               <Wind className="w-4 h-4 text-muted-foreground flex-shrink-0" />
               <div>
-                <p className="text-xs text-muted-foreground">Wind Speed</p>
-                <p className="font-semibold">{weather.windSpeed.toFixed(1)} km/h</p>
+                <p className="text-[10px] text-muted-foreground">Wind</p>
+                <p className="text-sm font-semibold">{weather.windSpeed.toFixed(1)} km/h</p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 p-2 bg-muted/40 rounded-xl">
               <Cloud className="w-4 h-4 text-muted-foreground flex-shrink-0" />
               <div>
-                <p className="text-xs text-muted-foreground">Precipitation</p>
-                <p className="font-semibold">{weather.precipitation} mm</p>
+                <p className="text-[10px] text-muted-foreground">Rain</p>
+                <p className="text-sm font-semibold">{weather.precipitation} mm</p>
               </div>
             </div>
           </div>
 
-          {/* Farming insights */}
-          <div className="pt-3 border-t space-y-2">
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Farming Insights</p>
-            <div className="grid grid-cols-2 gap-2">
-              <div className="p-2 bg-muted rounded-lg">
-                <p className="text-xs text-muted-foreground">Dew Point</p>
-                <p className="text-sm font-semibold">{dewPoint.toFixed(1)}°C</p>
+          <div className="pt-2 border-t border-border/50 space-y-2">
+            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Farming Insights</p>
+            <div className="grid grid-cols-3 gap-2">
+              <div className="p-2 bg-muted/40 rounded-xl text-center">
+                <p className="text-[10px] text-muted-foreground">Dew Point</p>
+                <p className="text-xs font-semibold">{dewPoint.toFixed(1)}°C</p>
               </div>
-              <div className="p-2 bg-muted rounded-lg">
-                <p className="text-xs text-muted-foreground">Frost Risk</p>
-                <Badge variant={frost.color} className="text-xs">{frost.level}</Badge>
+              <div className="p-2 bg-muted/40 rounded-xl text-center">
+                <p className="text-[10px] text-muted-foreground">Frost</p>
+                <Badge variant={frost.color} className="text-[10px] h-5">{frost.level}</Badge>
               </div>
-              <div className="p-2 bg-muted rounded-lg">
-                <p className="text-xs text-muted-foreground">Spray Conditions</p>
-                <p className="text-sm font-semibold">{sprayCondition}</p>
-              </div>
-              <div className="p-2 bg-muted rounded-lg">
-                <p className="text-xs text-muted-foreground">Condition</p>
-                <p className="text-sm font-semibold">{weather.condition}</p>
+              <div className="p-2 bg-muted/40 rounded-xl text-center">
+                <p className="text-[10px] text-muted-foreground">Spray</p>
+                <p className="text-xs font-semibold">{sprayCondition}</p>
               </div>
             </div>
           </div>
