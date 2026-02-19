@@ -9,8 +9,8 @@ const BottomNav = () => {
   const navItems = [
     { icon: Home, label: t("nav.home"), path: "/" },
     { icon: Droplet, label: t("nav.moisture"), path: "/moisture" },
+    { icon: Sprout, label: "Crops", path: "/crops" },
     { icon: Clock, label: t("nav.schedule"), path: "/schedule" },
-    { icon: Sprout, label: t("nav.fertility"), path: "/fertility" },
     { icon: User, label: t("nav.profile"), path: "/profile" },
   ];
 

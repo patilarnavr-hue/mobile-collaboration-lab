@@ -2,8 +2,9 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Droplet, Sprout, Clock, Activity, Radio, Bug, TrendingUp, Map, Trophy } from "lucide-react";
+import { Droplet, Sprout, Clock, Activity, Radio, Bug, TrendingUp, Map, Trophy, BarChart3 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { Skeleton } from "@/components/ui/skeleton";
 import BottomNav from "@/components/BottomNav";
 import ChatBot from "@/components/ChatBot";
 import AIRecommendations from "@/components/AIRecommendations";
@@ -21,10 +22,11 @@ const Index = () => {
   const [nextSchedule, setNextSchedule] = useState<string | null>(null);
   const [selectedCrop, setSelectedCrop] = useState<string | null>(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     checkOnboarding();
-    fetchDashboardData();
+    fetchDashboardData().then(() => setLoading(false));
   }, [selectedCrop]);
 
   const checkOnboarding = async () => {
@@ -68,82 +70,95 @@ const Index = () => {
 
       <main className="p-4 space-y-4 max-w-lg mx-auto animate-fade-in">
         <CropSelector value={selectedCrop || undefined} onChange={setSelectedCrop} />
-        <AIRecommendations />
-        <AlertsPanel />
-        <WeatherWidget />
-        <HealthScore cropId={selectedCrop} />
-        <HealthScoreChart cropId={selectedCrop} />
 
-        <div className="grid grid-cols-1 gap-3">
-          <Card className="glass-card cursor-pointer hover:shadow-lg transition-all" onClick={() => navigate("/moisture")}>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Soil Moisture</CardTitle>
-              <Droplet className={getStatusColor(moistureLevel)} />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{moistureLevel !== null ? `${moistureLevel}%` : "No data"}</div>
-              <p className="text-xs text-muted-foreground mt-1">
-                {moistureLevel !== null ? (moistureLevel < 30 ? "Low - Water needed" : moistureLevel < 60 ? "Moderate" : "Optimal") : "Add your first reading"}
-              </p>
-            </CardContent>
-          </Card>
+        {loading ? (
+          <div className="space-y-3">
+            <Skeleton className="h-28 w-full rounded-2xl" />
+            <Skeleton className="h-28 w-full rounded-2xl" />
+            <Skeleton className="h-28 w-full rounded-2xl" />
+          </div>
+        ) : (
+          <>
+            <AIRecommendations />
+            <AlertsPanel />
+            <WeatherWidget />
+            <HealthScore cropId={selectedCrop} />
+            <HealthScoreChart cropId={selectedCrop} />
 
-          <Card className="glass-card cursor-pointer hover:shadow-lg transition-all" onClick={() => navigate("/fertility")}>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Soil Fertility</CardTitle>
-              <Sprout className={getStatusColor(fertilityLevel)} />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{fertilityLevel !== null ? `${fertilityLevel}%` : "No data"}</div>
-              <p className="text-xs text-muted-foreground mt-1">
-                {fertilityLevel !== null ? (fertilityLevel < 40 ? "Low - Fertilize soon" : fertilityLevel < 70 ? "Moderate" : "Good") : "Add your first reading"}
-              </p>
-            </CardContent>
-          </Card>
+            <div className="grid grid-cols-1 gap-3">
+              <Card className="glass-card cursor-pointer hover:shadow-lg transition-all active:scale-[0.98]" onClick={() => navigate("/moisture")}>
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium">Soil Moisture</CardTitle>
+                  <Droplet className={getStatusColor(moistureLevel)} />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{moistureLevel !== null ? `${moistureLevel}%` : "No data"}</div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {moistureLevel !== null ? (moistureLevel < 30 ? "Low - Water needed" : moistureLevel < 60 ? "Moderate" : "Optimal") : "Add your first reading"}
+                  </p>
+                </CardContent>
+              </Card>
 
-          <Card className="glass-card cursor-pointer hover:shadow-lg transition-all" onClick={() => navigate("/schedule")}>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Next Watering</CardTitle>
-              <Clock className="text-accent" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-lg font-semibold">{nextSchedule || "No schedule set"}</div>
-              <p className="text-xs text-muted-foreground mt-1">Tap to manage</p>
-            </CardContent>
-          </Card>
-        </div>
+              <Card className="glass-card cursor-pointer hover:shadow-lg transition-all active:scale-[0.98]" onClick={() => navigate("/fertility")}>
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium">Soil Fertility</CardTitle>
+                  <Sprout className={getStatusColor(fertilityLevel)} />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{fertilityLevel !== null ? `${fertilityLevel}%` : "No data"}</div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {fertilityLevel !== null ? (fertilityLevel < 40 ? "Low - Fertilize soon" : fertilityLevel < 70 ? "Moderate" : "Good") : "Add your first reading"}
+                  </p>
+                </CardContent>
+              </Card>
 
-        <Card className="glass-card">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Activity className="w-5 h-5" />
-              Quick Actions
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="grid grid-cols-2 gap-2">
-            <Button className="rounded-xl h-auto py-3 text-xs" onClick={() => navigate("/moisture")}>
-              <Droplet className="w-4 h-4 mr-1.5" />Moisture
-            </Button>
-            <Button className="rounded-xl h-auto py-3 text-xs" variant="secondary" onClick={() => navigate("/fertility")}>
-              <Sprout className="w-4 h-4 mr-1.5" />Fertility
-            </Button>
-            <Button className="rounded-xl h-auto py-3 text-xs" variant="outline" onClick={() => navigate("/sensors")}>
-              <Radio className="w-4 h-4 mr-1.5" />Sensors
-            </Button>
-            <Button className="rounded-xl h-auto py-3 text-xs" variant="outline" onClick={() => navigate("/pest-detection")}>
-              <Bug className="w-4 h-4 mr-1.5" />Pests
-            </Button>
-            <Button className="rounded-xl h-auto py-3 text-xs" variant="outline" onClick={() => navigate("/yield-prediction")}>
-              <TrendingUp className="w-4 h-4 mr-1.5" />Yield
-            </Button>
-            <Button className="rounded-xl h-auto py-3 text-xs" variant="outline" onClick={() => navigate("/farm-map")}>
-              <Map className="w-4 h-4 mr-1.5" />Farm Map
-            </Button>
-            <Button className="rounded-xl h-auto py-3 text-xs col-span-2" variant="outline" onClick={() => navigate("/leaderboard")}>
-              <Trophy className="w-4 h-4 mr-1.5" />Leaderboard
-            </Button>
-          </CardContent>
-        </Card>
+              <Card className="glass-card cursor-pointer hover:shadow-lg transition-all active:scale-[0.98]" onClick={() => navigate("/schedule")}>
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium">Next Watering</CardTitle>
+                  <Clock className="text-accent" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-lg font-semibold">{nextSchedule || "No schedule set"}</div>
+                  <p className="text-xs text-muted-foreground mt-1">Tap to manage</p>
+                </CardContent>
+              </Card>
+            </div>
+
+            <Card className="glass-card">
+              <CardHeader className="pb-2">
+                <CardTitle className="flex items-center gap-2 text-sm">
+                  <Activity className="w-4 h-4" /> Quick Actions
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="grid grid-cols-3 gap-2">
+                <Button className="rounded-xl h-auto py-3 text-[11px] flex-col gap-1" onClick={() => navigate("/moisture")}>
+                  <Droplet className="w-4 h-4" />Moisture
+                </Button>
+                <Button className="rounded-xl h-auto py-3 text-[11px] flex-col gap-1" variant="secondary" onClick={() => navigate("/fertility")}>
+                  <Sprout className="w-4 h-4" />Fertility
+                </Button>
+                <Button className="rounded-xl h-auto py-3 text-[11px] flex-col gap-1" variant="outline" onClick={() => navigate("/sensors")}>
+                  <Radio className="w-4 h-4" />Sensors
+                </Button>
+                <Button className="rounded-xl h-auto py-3 text-[11px] flex-col gap-1" variant="outline" onClick={() => navigate("/pest-detection")}>
+                  <Bug className="w-4 h-4" />Pests
+                </Button>
+                <Button className="rounded-xl h-auto py-3 text-[11px] flex-col gap-1" variant="outline" onClick={() => navigate("/yield-prediction")}>
+                  <TrendingUp className="w-4 h-4" />Yield
+                </Button>
+                <Button className="rounded-xl h-auto py-3 text-[11px] flex-col gap-1" variant="outline" onClick={() => navigate("/farm-map")}>
+                  <Map className="w-4 h-4" />Farm Map
+                </Button>
+                <Button className="rounded-xl h-auto py-3 text-[11px] flex-col gap-1 col-span-2" variant="outline" onClick={() => navigate("/leaderboard")}>
+                  <Trophy className="w-4 h-4" />Leaderboard
+                </Button>
+                <Button className="rounded-xl h-auto py-3 text-[11px] flex-col gap-1" variant="outline" onClick={() => navigate("/crop-comparison")}>
+                  <BarChart3 className="w-4 h-4" />Compare
+                </Button>
+              </CardContent>
+            </Card>
+          </>
+        )}
       </main>
 
       <BottomNav />
