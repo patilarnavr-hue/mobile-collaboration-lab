@@ -187,6 +187,10 @@ const Index = () => {
                 </Button>
               </CardContent>
             </Card>
+
+            {/* Storage System */}
+            <RequestStorageCard />
+            <StorageStatusPanel />
           </>
         )}
       </main>

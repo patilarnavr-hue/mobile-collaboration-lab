@@ -493,8 +493,11 @@ export type Database = {
           is_active: boolean | null
           last_reading: number | null
           last_reading_at: string | null
+          latitude: number | null
+          longitude: number | null
           sensor_code: string
           sensor_name: string
+          sensor_type: string | null
           updated_at: string | null
           user_id: string
         }
@@ -504,8 +507,11 @@ export type Database = {
           is_active?: boolean | null
           last_reading?: number | null
           last_reading_at?: string | null
+          latitude?: number | null
+          longitude?: number | null
           sensor_code: string
           sensor_name: string
+          sensor_type?: string | null
           updated_at?: string | null
           user_id: string
         }
@@ -515,8 +521,11 @@ export type Database = {
           is_active?: boolean | null
           last_reading?: number | null
           last_reading_at?: string | null
+          latitude?: number | null
+          longitude?: number | null
           sensor_code?: string
           sensor_name?: string
+          sensor_type?: string | null
           updated_at?: string | null
           user_id?: string
         }
