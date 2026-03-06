@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Droplet, Sprout, Clock, Activity, Radio, Bug, TrendingUp, Map, Trophy, BarChart3 } from "lucide-react";
+import { Droplet, Sprout, Clock, Activity, Radio, Bug, TrendingUp, Map, Trophy, BarChart3, Warehouse } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 import BottomNav from "@/components/BottomNav";
@@ -14,6 +14,14 @@ import CropSelector from "@/components/CropSelector";
 import HealthScore from "@/components/HealthScore";
 import HealthScoreChart from "@/components/HealthScoreChart";
 import Onboarding from "@/components/Onboarding";
+import MoistureGauge from "@/components/MoistureGauge";
+import FertilityIndicator from "@/components/FertilityIndicator";
+import SmartIrrigationCard from "@/components/SmartIrrigationCard";
+import CropIntelligencePanel from "@/components/CropIntelligencePanel";
+import RequestStorageCard from "@/components/RequestStorageCard";
+import StorageStatusPanel from "@/components/StorageStatusPanel";
+import SensorCard from "@/components/SensorCard";
+import { useRealtimeSensors } from "@/hooks/useRealtimeSensors";
 
 const Index = () => {
   const navigate = useNavigate();
