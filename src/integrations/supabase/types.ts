@@ -300,6 +300,60 @@ export type Database = {
           },
         ]
       }
+      irrigation_events: {
+        Row: {
+          created_at: string
+          crop_id: string | null
+          duration_minutes: number
+          id: string
+          moisture_after: number | null
+          moisture_before: number | null
+          sensor_id: string | null
+          status: string
+          trigger_type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          crop_id?: string | null
+          duration_minutes: number
+          id?: string
+          moisture_after?: number | null
+          moisture_before?: number | null
+          sensor_id?: string | null
+          status?: string
+          trigger_type?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          crop_id?: string | null
+          duration_minutes?: number
+          id?: string
+          moisture_after?: number | null
+          moisture_before?: number | null
+          sensor_id?: string | null
+          status?: string
+          trigger_type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "irrigation_events_crop_id_fkey"
+            columns: ["crop_id"]
+            isOneToOne: false
+            referencedRelation: "crops"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "irrigation_events_sensor_id_fkey"
+            columns: ["sensor_id"]
+            isOneToOne: false
+            referencedRelation: "sensors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       map_markers: {
         Row: {
           created_at: string
@@ -464,6 +518,45 @@ export type Database = {
           sensor_code?: string
           sensor_name?: string
           updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      storage_requests: {
+        Row: {
+          created_at: string
+          crop_type: string
+          harvest_date: string
+          id: string
+          quantity_kg: number
+          status: string
+          suitability_notes: string | null
+          suitability_score: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          crop_type: string
+          harvest_date: string
+          id?: string
+          quantity_kg: number
+          status?: string
+          suitability_notes?: string | null
+          suitability_score?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          crop_type?: string
+          harvest_date?: string
+          id?: string
+          quantity_kg?: number
+          status?: string
+          suitability_notes?: string | null
+          suitability_score?: number | null
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
