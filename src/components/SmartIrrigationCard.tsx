@@ -47,7 +47,7 @@ const SmartIrrigationCard = ({ currentMoisture, cropId }: SmartIrrigationCardPro
     const event = pumpService.createEvent(moisture, "manual");
     if (!event) { setPumpRunning(false); return; }
 
-    await supabase.from("irrigation_events").insert({
+    await (supabase as any).from("irrigation_events").insert({
       user_id: user.id,
       crop_id: cropId || null,
       trigger_type: event.triggerType,

@@ -31,7 +31,7 @@ const RequestStorageCard = () => {
     // Calculate suitability with assumed ambient conditions
     const suitability = calculateStorageSuitability(65, 25, cropType);
 
-    const { error } = await supabase.from("storage_requests").insert({
+    const { error } = await (supabase as any).from("storage_requests").insert({
       user_id: user.id,
       crop_type: cropType,
       quantity_kg: parseFloat(quantity),
