@@ -25,6 +25,7 @@ import { useRealtimeSensors } from "@/hooks/useRealtimeSensors";
 
 const Index = () => {
   const navigate = useNavigate();
+  const sensorData = useRealtimeSensors();
   const [moistureLevel, setMoistureLevel] = useState<number | null>(null);
   const [fertilityLevel, setFertilityLevel] = useState<number | null>(null);
   const [nextSchedule, setNextSchedule] = useState<string | null>(null);
