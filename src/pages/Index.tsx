@@ -91,8 +91,29 @@ const Index = () => {
             <AIRecommendations />
             <AlertsPanel />
             <WeatherWidget />
+
+            {/* Real-time Sensor Gauges */}
+            <div className="grid grid-cols-2 gap-3">
+              <MoistureGauge value={sensorData.moisture ?? moistureLevel} />
+              <FertilityIndicator value={sensorData.fertility ?? fertilityLevel} />
+            </div>
+
+            {/* Smart Irrigation */}
+            <SmartIrrigationCard currentMoisture={sensorData.moisture ?? moistureLevel} cropId={selectedCrop} />
+
+            {/* Crop Intelligence */}
+            <CropIntelligencePanel cropId={selectedCrop} />
+
             <HealthScore cropId={selectedCrop} />
             <HealthScoreChart cropId={selectedCrop} />
+
+            {/* Live Sensors */}
+            {sensorData.sensors.length > 0 && (
+              <div className="space-y-2">
+                <h3 className="text-sm font-semibold text-muted-foreground px-1">Live Sensors</h3>
+                {sensorData.sensors.slice(0, 4).map(s => <SensorCard key={s.id} sensor={s} />)}
+              </div>
+            )}
 
             <div className="grid grid-cols-1 gap-3">
               <Card className="glass-card cursor-pointer hover:shadow-lg transition-all active:scale-[0.98]" onClick={() => navigate("/moisture")}>
