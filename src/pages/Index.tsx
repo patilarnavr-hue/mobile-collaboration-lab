@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Droplet, Sprout, Clock, Activity, Radio, Bug, TrendingUp, Map, Trophy, BarChart3 } from "lucide-react";
+import { Droplet, Sprout, Clock, Activity, Radio, Bug, TrendingUp, Map, Trophy, BarChart3, Warehouse } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 import BottomNav from "@/components/BottomNav";
@@ -14,9 +14,18 @@ import CropSelector from "@/components/CropSelector";
 import HealthScore from "@/components/HealthScore";
 import HealthScoreChart from "@/components/HealthScoreChart";
 import Onboarding from "@/components/Onboarding";
+import MoistureGauge from "@/components/MoistureGauge";
+import FertilityIndicator from "@/components/FertilityIndicator";
+import SmartIrrigationCard from "@/components/SmartIrrigationCard";
+import CropIntelligencePanel from "@/components/CropIntelligencePanel";
+import RequestStorageCard from "@/components/RequestStorageCard";
+import StorageStatusPanel from "@/components/StorageStatusPanel";
+import SensorCard from "@/components/SensorCard";
+import { useRealtimeSensors } from "@/hooks/useRealtimeSensors";
 
 const Index = () => {
   const navigate = useNavigate();
+  const sensorData = useRealtimeSensors();
   const [moistureLevel, setMoistureLevel] = useState<number | null>(null);
   const [fertilityLevel, setFertilityLevel] = useState<number | null>(null);
   const [nextSchedule, setNextSchedule] = useState<string | null>(null);
@@ -82,8 +91,29 @@ const Index = () => {
             <AIRecommendations />
             <AlertsPanel />
             <WeatherWidget />
+
+            {/* Real-time Sensor Gauges */}
+            <div className="grid grid-cols-2 gap-3">
+              <MoistureGauge value={sensorData.moisture ?? moistureLevel} />
+              <FertilityIndicator value={sensorData.fertility ?? fertilityLevel} />
+            </div>
+
+            {/* Smart Irrigation */}
+            <SmartIrrigationCard currentMoisture={sensorData.moisture ?? moistureLevel} cropId={selectedCrop} />
+
+            {/* Crop Intelligence */}
+            <CropIntelligencePanel cropId={selectedCrop} />
+
             <HealthScore cropId={selectedCrop} />
             <HealthScoreChart cropId={selectedCrop} />
+
+            {/* Live Sensors */}
+            {sensorData.sensors.length > 0 && (
+              <div className="space-y-2">
+                <h3 className="text-sm font-semibold text-muted-foreground px-1">Live Sensors</h3>
+                {sensorData.sensors.slice(0, 4).map(s => <SensorCard key={s.id} sensor={s} />)}
+              </div>
+            )}
 
             <div className="grid grid-cols-1 gap-3">
               <Card className="glass-card cursor-pointer hover:shadow-lg transition-all active:scale-[0.98]" onClick={() => navigate("/moisture")}>
@@ -157,6 +187,10 @@ const Index = () => {
                 </Button>
               </CardContent>
             </Card>
+
+            {/* Storage System */}
+            <RequestStorageCard />
+            <StorageStatusPanel />
           </>
         )}
       </main>
