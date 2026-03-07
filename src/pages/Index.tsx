@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Droplet, Sprout, Clock, Activity, Radio, Bug, TrendingUp, Map, Trophy, BarChart3, Warehouse } from "lucide-react";
+import { Droplet, Sprout, Clock, Activity, Radio, Bug, TrendingUp, Map, Trophy, BarChart3 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 import BottomNav from "@/components/BottomNav";
@@ -22,9 +22,12 @@ import RequestStorageCard from "@/components/RequestStorageCard";
 import StorageStatusPanel from "@/components/StorageStatusPanel";
 import SensorCard from "@/components/SensorCard";
 import { useRealtimeSensors } from "@/hooks/useRealtimeSensors";
+import { useAuthReady } from "@/hooks/useAuthReady";
+import { Loader2 } from "lucide-react";
 
 const Index = () => {
   const navigate = useNavigate();
+  const { user, isReady } = useAuthReady();
   const sensorData = useRealtimeSensors();
   const [moistureLevel, setMoistureLevel] = useState<number | null>(null);
   const [fertilityLevel, setFertilityLevel] = useState<number | null>(null);
@@ -34,19 +37,18 @@ const Index = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!isReady || !user) return;
     checkOnboarding();
     fetchDashboardData().then(() => setLoading(false));
-  }, [selectedCrop]);
+  }, [selectedCrop, isReady, user]);
 
   const checkOnboarding = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
     const { data } = await supabase.from("user_preferences").select("onboarding_completed").eq("user_id", user.id).maybeSingle();
     if (!data) setShowOnboarding(true);
   };
 
   const fetchDashboardData = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
     const moistureQuery = supabase.from("moisture_readings").select("moisture_level").eq("user_id", user.id).order("created_at", { ascending: false }).limit(1);
