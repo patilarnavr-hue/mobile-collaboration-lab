@@ -72,8 +72,15 @@ const Index = () => {
     return "text-primary";
   };
 
+  if (!isReady) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-background pb-20">
       <header className="glass-header text-primary-foreground p-6">
         <h1 className="text-2xl font-bold">AgroEye</h1>
         <p className="text-xs opacity-80">Monitor your crops in real-time</p>
