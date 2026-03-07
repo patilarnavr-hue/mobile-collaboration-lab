@@ -25,14 +25,14 @@ import InstallPrompt from "./components/InstallPrompt";
 const queryClient = new QueryClient();
 
 const App = () => (
-  <ErrorBoundary>
-    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-      <QueryClientProvider client={queryClient}>
-        <Toaster />
-        <Sonner />
-        <OfflineIndicator />
-        <InstallPrompt />
-        <BrowserRouter>
+  <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+    <QueryClientProvider client={queryClient}>
+      <Toaster />
+      <Sonner />
+      <OfflineIndicator />
+      <InstallPrompt />
+      <BrowserRouter>
+        <ErrorBoundary>
           <Routes>
             <Route path="/auth" element={<Auth />} />
             <Route
@@ -133,10 +133,10 @@ const App = () => (
             />
             <Route path="*" element={<NotFound />} />
           </Routes>
-        </BrowserRouter>
-      </QueryClientProvider>
-    </ThemeProvider>
-  </ErrorBoundary>
+        </ErrorBoundary>
+      </BrowserRouter>
+    </QueryClientProvider>
+  </ThemeProvider>
 );
 
 export default App;
