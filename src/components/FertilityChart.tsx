@@ -76,7 +76,7 @@ const FertilityChart = ({ readings }: FertilityChartProps) => {
           </div>
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="overflow-hidden">
         {chartData.length === 0 ? (
           <p className="text-center text-muted-foreground py-8">
             No data for the selected period

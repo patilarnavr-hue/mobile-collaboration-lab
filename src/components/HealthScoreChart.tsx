@@ -80,7 +80,7 @@ const HealthScoreChart = ({ cropId }: { cropId?: string | null }) => {
           </div>
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="overflow-hidden">
         {chartData.length === 0 ? (
           <p className="text-center text-muted-foreground py-8">
             No health score data for the selected period

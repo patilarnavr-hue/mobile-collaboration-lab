@@ -54,7 +54,7 @@ const MoistureChart = ({ readings }: MoistureChartProps) => {
           </div>
         </div>
       </CardHeader>
-      <CardContent className="px-2 pb-3">
+      <CardContent className="px-2 pb-3 overflow-hidden">
         {chartData.length === 0 ? (
           <p className="text-center text-muted-foreground py-8 text-sm">
             No data for the selected period
