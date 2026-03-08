@@ -80,13 +80,13 @@ const HealthScoreChart = ({ cropId }: { cropId?: string | null }) => {
           </div>
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="overflow-hidden">
         {chartData.length === 0 ? (
           <p className="text-center text-muted-foreground py-8">
             No health score data for the selected period
           </p>
         ) : (
-          <ChartContainer config={chartConfig} className="h-[300px]">
+          <ChartContainer config={chartConfig} className="h-[300px] min-w-0">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />

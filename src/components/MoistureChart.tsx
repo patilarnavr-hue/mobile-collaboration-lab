@@ -54,13 +54,13 @@ const MoistureChart = ({ readings }: MoistureChartProps) => {
           </div>
         </div>
       </CardHeader>
-      <CardContent className="px-2 pb-3">
+      <CardContent className="px-2 pb-3 overflow-hidden">
         {chartData.length === 0 ? (
           <p className="text-center text-muted-foreground py-8 text-sm">
             No data for the selected period
           </p>
         ) : (
-          <ChartContainer config={chartConfig} className="h-[220px] w-full">
+          <ChartContainer config={chartConfig} className="h-[220px] w-full min-w-0">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartData} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
